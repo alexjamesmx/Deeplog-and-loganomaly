@@ -122,7 +122,7 @@ class Store(object):
             pprint(self.training_sliding_window)
 
     def set_valid_sliding_window(self, sequentials=None, quantitatives=None, semantics=None, labels=None,
-                                 sequence_idxs=None, session_labels=None):
+                                 idxs=None, session_labels=None):
         if sequentials is None and quantitatives is None and semantics is None:
             raise ValueError('Provide at least one feature type')
         self.valid_sliding_window = {
@@ -130,14 +130,14 @@ class Store(object):
             "quantitatives": quantitatives,
             "semantics": semantics,
             "labels": labels,
-            "sequence_idxs": sequence_idxs,
+            "idxs": idxs,
             "session_labels": session_labels,
             "lengths": {
                 "sequentials": len(sequentials) if sequentials is not None else None,
                 "quantitatives": len(quantitatives) if quantitatives is not None else None,
                 "semantics": len(semantics) if semantics is not None else None,
                 "labels": len(labels) if labels is not None else None,
-                "sequence_idxs": len(sequence_idxs) if sequence_idxs is not None else None,
+                "idxs": len(idxs) if idxs is not None else None,
                 "session_labels": len(session_labels) if session_labels is not None else None,
             }
         }
@@ -220,7 +220,7 @@ class Store(object):
 
     def get_test_data(self, n=None, m=None, blockId=None):
         if blockId:
-            return [log for log in self.test_data if log[0] == blockId]
+            return [log for log in self.test_data if log["SessionId"] == blockId]
         if n is None:
             n = 0  # Default start value if not provided
         if m is None:
@@ -263,9 +263,11 @@ class Store(object):
     def set_original_data(self, logs):
         self.original_data = logs
 
-    def get_original_data(self, blockId=None):
+    def get_original_data(self, blockId=None, n=None, m=None):
         if blockId:
             return [log for log in self.original_data if log["SessionId"] == blockId]
+        if n is not None and m is not None:
+            return self.original_data[n:m]
         else:
             return self.original_data
 

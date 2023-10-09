@@ -17,7 +17,7 @@ def sliding_window(df, window_size, step_size, logger: Logger):
         _type_: _description_
     """
     log_size = df.shape[0]
-    severity, events = df["SEVERITY"], df["EVENTID"]
+    severity, events, log_uuid, message = df["SEVERITY"], df["EVENTID"], df["log_uuid"], df["MESSAGE"]
 
     new_data = []
     start_end_index_pair = set()
@@ -33,7 +33,9 @@ def sliding_window(df, window_size, step_size, logger: Logger):
         new_data.append({
             "Label": severity[start_index:end_index].values.tolist(),
             "EventId": events[start_index: end_index].values.tolist(),
-            "SessionId": n_sess
+            "SessionId": n_sess,
+            # "MESSAGE": message[start_index: end_index].values.tolist(),
+            # "log_uuid": log_uuid[start_index: end_index].values.tolist(),
         })
         n_sess += 1
 

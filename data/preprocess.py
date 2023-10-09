@@ -14,6 +14,7 @@ def preprocess_data(path: str,
                     store: Store,
                     logger) -> Tuple[list, list] or list:
     data, stat = load_features(path, is_train=is_train, store=store)
+
     phase_message = "Train" if is_train else "Test"
     logger.info(
         f"{phase_message} data length: {len(data)}, statistics: {stat}")
@@ -25,23 +26,15 @@ def preprocess_data(path: str,
         store.set_valid_data(valid_data)
         store.set_lengths(train_length=len(train_data), valid_length=len(
             valid_data))
+        logger.info(
+            f"Size of train data: {len(train_data)}. Size of valid data: {len(valid_data)}")
         return train_data, valid_data
 
     else:
         test_data = data
-        store.set_test_data(test_data)
         store.set_lengths(test_length=len(test_data))
-        label_dict = {}
-        counter = {}
-        for (k, e, l) in test_data:
-            key = tuple(e)
-            label_dict[key] = [k, l]
-            try:
-                counter[key] += 1
-            except Exception:
-                counter[key] = 1
-        test_data = [(list(k), v) for k, v in label_dict.items()]
-        num_sessions = [counter[tuple(k)] for k, _ in test_data]
+        num_sessions = [1 for _ in test_data]
+        logger.info(f"Size of test data: {len(test_data)}")
         return test_data, num_sessions
 
 
@@ -55,7 +48,7 @@ def preprocess_slidings(train_data=None, valid_data=None, test_data=None,
         sequentials, quantitatives, semantics, labels, sequence_idxs, train_sessionIds = sliding_window(
             train_data,
             vocab=vocab,
-            window_size=args.history_size,
+            window_size=args.window_size,
             is_train=True,
             semantic=args.semantic,
             quantitative=args.quantitative,
@@ -71,7 +64,7 @@ def preprocess_slidings(train_data=None, valid_data=None, test_data=None,
         sequentials, quantitatives, semantics, labels, sequence_idxs, valid_sessionIds = sliding_window(
             valid_data,
             vocab=vocab,
-            window_size=args.history_size,
+            window_size=args.window_size,
             is_train=True,
             semantic=args.semantic,
             quantitative=args.quantitative,
@@ -83,12 +76,13 @@ def preprocess_slidings(train_data=None, valid_data=None, test_data=None,
         valid_dataset = LogDataset(
             sequentials, quantitatives, semantics, labels, sequence_idxs)
         return train_dataset, valid_dataset, train_sessionIds, valid_sessionIds
+
     else:
         sequentials, quantitatives, semantics, labels, sequence_idxs, test_sessionIds = sliding_window(
             test_data,
             vocab=vocab,
-            window_size=args.history_size,
-            is_train=False,
+            window_size=args.window_size,
+            is_train=True,
             semantic=args.semantic,
             quantitative=args.quantitative,
             sequential=args.sequential,

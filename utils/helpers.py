@@ -81,8 +81,6 @@ def arg_parser():
                         help="to use semantic vector (word2vec)")
 
     # model parameters (deeplog, loganomaly, logrobust)
-    parser.add_argument("--history_size", default=10, type=int,
-                        help="window size for entry-level detection")
     parser.add_argument("--embeddings", default="embeddings.json",
                         help="template embedding json file")
 

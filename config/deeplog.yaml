@@ -10,19 +10,18 @@ sequential: true
 semantic: false
 quantitative: false
 is_chronological: true
-history_size: 10
 
 # model configuration
 model_name: DeepLog
 embedding_dim: 300 # default: 300, can range: from 32 to 1024
 dropout: 0.1 # dropout rate: from 0.0 to 0.5
-hidden_size: 128 # hidden size: from 32 to 1024
+hidden_size: 64 # hidden size: from 32 to 1024 default: same as h
 num_layers: 2 # number of layers: from 1 to 8
 topk: 9 # default
 
 # optimizer configuration
 scheduler: linear
-warmup_rate: 0.1 # range: from 0.01 to 0.2
+warmup_rate: 0.15 # range: from 0.01 to 0.2
 lr: 0.001
 adam_beta1: 0.9
 adam_beta2: 0.999
@@ -33,14 +32,15 @@ optim_momentum: 0.9
 # training configuration
 accumulation_step: 1 # range: from 1 to 10
 batch_size: 2048 # range: from 32 to 4096
-max_epoch: 10 # range: from 1 to 100
+max_epoch: 12 # range: from 1 to 100
 
 # common configuration
-output_dir: ./output/
-step_size: 50
+step_size: 20
+window_size: 20
 train_size: 0.1
 valid_ratio: 0.1
-window_size: 50
+output_dir: ./output/
 is_train: true
 is_load: false
 is_update: false
+see_config: false

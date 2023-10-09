@@ -28,6 +28,33 @@ logging.basicConfig(
 accelerator = Accelerator()
 
 
+def run_predict(args: argparse.Namespace,
+                output_dir: str,
+                store: Store,
+                logger: Logger = getLogger("__name__")):
+    logger.info("Start predicting :)")
+    train_path, test_path = process_dataset(logger=logger,
+                                            output_dir=output_dir,
+                                            args=args)
+    vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
+    vocabs = build_vocab(vocab_path,
+                         args.data_dir,
+                         train_path,
+                         args.embeddings,
+                         args.embedding_dim,
+                         logger)
+    model = build_model(args, vocab_size=len(vocabs))
+    normal, anomalies = predict(args,
+                                test_path,
+                                vocabs,
+                                model,
+                                store,
+                                output_dir,
+                                logger,
+                                accelerator)
+    logger.info(f"Normal: {normal} - Anomalies: {anomalies}")
+
+
 def run_train(args: argparse.Namespace,
               output_dir: str,
               store: Store,
@@ -110,85 +137,159 @@ def train(args: argparse.Namespace,
         logger=logger,
     )
 
-    # optimizer = get_optimizer(args, model.parameters())
+    optimizer = get_optimizer(args, model.parameters())
 
-    # device = accelerator.device
-    # model = model.to(device)
+    device = accelerator.device
+    model = model.to(device)
+    if args.see_config:
+        logger.info(f"Optimizer: {optimizer}")
+        logger.info(model)
 
-    # trainer = Trainer(
-    #     model,
-    #     train_dataset=train_dataset,
-    #     valid_dataset=valid_dataset,
-    #     is_train=True,
-    #     optimizer=optimizer,
-    #     no_epochs=args.max_epoch,
-    #     batch_size=args.batch_size,
-    #     scheduler_type=args.scheduler,
-    #     warmup_rate=args.warmup_rate,
-    #     accumulation_step=args.accumulation_step,
-    #     logger=logger,
-    #     accelerator=accelerator,
-    #     num_classes=len(vocab),
-    # )
+    trainer = Trainer(
+        model,
+        train_dataset=train_dataset,
+        valid_dataset=valid_dataset,
+        is_train=True,
+        optimizer=optimizer,
+        no_epochs=args.max_epoch,
+        batch_size=args.batch_size,
+        scheduler_type=args.scheduler,
+        warmup_rate=args.warmup_rate,
+        accumulation_step=args.accumulation_step,
+        logger=logger,
+        accelerator=accelerator,
+        num_classes=len(vocab),
+    )
 
-    # logger.info(f"Start training {args.model_name} model on {device} device\n")
-    # logger.info(model)
+    logger.info(
+        f"/nStart training {args.model_name} model on {device} device\n")
 
-    # train_loss, val_loss, val_acc, args.topk = trainer.train(device=device,
-    #                                                          save_dir=f"{output_dir}/models",
-    #                                                          model_name=args.model_name,
-    #                                                          topk=args.topk)
-    # logger.info(
-    #     f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
+    train_loss, val_loss, val_acc, _ = trainer.train(device=device,
+                                                     save_dir=f"{output_dir}/models",
+                                                     model_name=args.model_name,
+                                                     topk=args.topk)
+    logger.info(
+        f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
+    recommend_topk = trainer.predict_unsupervised(valid_dataset,
+                                                  [],
+                                                  valid_session_idxs,
+                                                  topk=args.topk,
+                                                  device=device,
+                                                  is_valid=True)
+    logger.info(
+        f"Top-{args.topk} Recommendation: {recommend_topk}\n")
 
-    # recommend_topk = trainer.predict_unsupervised(valid_dataset,
-    #                                               [],
-    #                                               valid_session_idxs,
-    #                                               topk=args.topk,
-    #                                               device=device,
-    #                                               is_valid=True)
-    # logger.info(
-    #     f"Top-{args.topk} Recommendation: {recommend_topk}\n")
+    test_data, num_sessions = preprocess_data(
+        path=test_path,
+        args=args,
+        is_train=False,
+        store=store,
+        logger=logger)
 
-    # test_data, num_sessions = preprocess_data(
-    #     path=test_path,
-    #     args=args,
-    #     is_train=False,
-    #     store=store,
-    #     logger=logger)
+    test_dataset, session_ids = preprocess_slidings(
+        test_data=test_data,
+        vocab=vocab,
+        args=args,
+        is_train=False,
+        store=store,
+        logger=logger,
+    )
 
-    # test_dataset, session_ids = preprocess_slidings(
-    #     test_data=test_data,
-    #     vocab=vocab,
-    #     args=args,
-    #     is_train=False,
-    #     store=store,
-    #     logger=logger,
-    # )
+    store.lengths
+    logger.info(
+        f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
 
-    # print(
-    #     f"Total session_ids: {len(session_ids)}")
+    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
+                                                     y_true=[],
+                                                     topk=args.topk,
+                                                     device=device,
+                                                     is_valid=False,
+                                                     num_sessions=num_sessions,
+                                                     session_ids=session_ids,
+                                                     store=store,
+                                                     )
 
-    # store.lengths
-    # # store.get_train_sliding_window(length=True)
-    # # store.get_valid_sliding_window(length=True)
-    # # store.get_test_sliding_window(length=True)
-    # logger.info(
-    #     f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
-    # normal, anomalies = trainer.predict_unsupervised(test_dataset,
-    #                                                  [],
-    #                                                  topk=args.topk,
-    #                                                  device=device,
-    #                                                  is_valid=False,
-    #                                                  num_sessions=num_sessions,
-    #                                                  session_ids=session_ids,
-    #                                                  store=store,
-    #                                                  )
+    return normal, anomalies
 
-    # logger.info(
-    #     f"window size: {args.window_size}, history size: {args.history_size}")
-    # return normal, anomalies
-    return 0, 0
+
+def predict(args: argparse.Namespace,
+            test_path: str,
+            vocab: Vocab,
+            model: torch.nn.Module,
+            store: Store,
+            output_dir: str,
+            logger: Logger = getLogger("__name__"),
+            accelerator: Accelerator = Accelerator()
+            ) -> Tuple[float, float]:
+    """
+    Train model
+
+    Args:
+        args (argparse.Namespace): Arguments
+        test_path (str): Path to test data
+        vocab (Vocab): Vocabulary
+        model (torch.nn.Module): Model
+        store (Store): log store 
+        output_dir (str): Output directory
+        logger (Logger, optional) 
+        accelerator (Accelerator) 
+
+    Returns:
+        Tuple[float, float]: Metrics
+    """
+    optimizer = get_optimizer(args, model.parameters())
+    device = accelerator.device
+    model = model.to(device)
+    if args.see_config:
+        logger.info(f"Optimizer: {optimizer}")
+        logger.info(model)
+
+    trainer = Trainer(
+        model,
+        is_train=False,
+        optimizer=optimizer,
+        no_epochs=args.max_epoch,
+        batch_size=args.batch_size,
+        scheduler_type=args.scheduler,
+        warmup_rate=args.warmup_rate,
+        accumulation_step=args.accumulation_step,
+        logger=logger,
+        accelerator=accelerator,
+        num_classes=len(vocab),
+    )
+
+    trainer.load_model(f"{output_dir}/models/{args.model_name}.pt")
+
+    test_data, num_sessions = preprocess_data(
+        path=test_path,
+        args=args,
+        is_train=False,
+        store=store,
+        logger=logger)
+
+    test_dataset, session_ids = preprocess_slidings(
+        test_data=test_data,
+        vocab=vocab,
+        args=args,
+        is_train=False,
+        store=store,
+        logger=logger,
+    )
+
+    store.lengths
+    logger.info(
+        f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
+
+    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
+                                                     y_true=[],
+                                                     topk=args.topk,
+                                                     device=device,
+                                                     is_valid=False,
+                                                     num_sessions=num_sessions,
+                                                     session_ids=session_ids,
+                                                     store=store,
+                                                     )
+    return normal, anomalies
 
 
 if __name__ == "__main__":
@@ -221,5 +322,7 @@ if __name__ == "__main__":
     logger.info(f"Output directory: {output_dir}")
     if args.is_train and not args.is_load and not args.is_update:
         run_train(args, output_dir, store, logger)
+    elif args.is_load and not args.is_train and not args.is_update:
+        run_predict(args, output_dir, store, logger)
     else:
         raise ValueError("Either train, load or update must be True")

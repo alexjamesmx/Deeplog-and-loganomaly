@@ -29,6 +29,7 @@ class DeepLog(nn.Module):
                             batch_first=True,
                             bidirectional=False,
                             dropout=dropout)
+
         self.fc = nn.Linear(hidden_size, vocab_size)
         self.criterion = criterion
 
@@ -45,7 +46,6 @@ class DeepLog(nn.Module):
         loss = None
         if y is not None and self.criterion is not None:
             loss = self.criterion(logits, y.view(-1).to(device))
-        # print(  f"x shape: {x.shape}, x each element shape: {x[0][0].shape}, logits shape: {logits.shape}, probabilities shape: {probabilities.shape}, loss shape: {loss}")
         return ModelOutput(logits=logits, probabilities=probabilities, loss=loss, embeddings=out[:, -1, :])
 
     def save(self, path):
@@ -60,15 +60,6 @@ class DeepLog(nn.Module):
 
     def predict_class(self, src, top_k=1, device="cpu"):
         del src['label']
-        # NOTE
-        # where original tensor or probabilities is a tensor of shape (batch_size, vocab_size)
-        # values, indices = torch.topk(self.forward(
-        #     src, device=device).probabilities, k=top_k, dim=1)
-        # print(
-        #     f" original tensor : {self.forward(src, device=device).probabilities.shape}")
-        # print(f"values with top k : {top_k}, {values}")
-        # print("indices: ", indices)
-
         return torch.topk(self.forward(src, device=device).probabilities, k=top_k, dim=1).indices
 
 
@@ -145,18 +136,3 @@ class LogAnomaly(nn.Module):
     def predict_class(self, batch, top_k=1, device="cpu"):
         del batch['label']
         return torch.topk(self.forward(batch, device=device).probabilities, k=top_k, dim=1).indices
-
-
-# if __name__ == '__main__':
-#     deeplog = DeepLog(128, 2, 100, 128)
-#     loganomaly = LogAnomaly(1, 128, 2, 100, 300)
-#     sem_inp = torch.rand(64, 100, 300)
-#     quan_inp = torch.rand(64, 100)
-#     seq_inp = torch.randint(100, (64, 100))
-#     print(quan_inp.shape)
-#     pred_labels = torch.randint(100, (64,))
-#     class_labels = torch.randint(2, (64,))
-#     out = loganomaly(sem_inp, quan_inp, y=pred_labels)
-#     print("LogAnomaly: ", out.loss)
-#     out = deeplog(seq_inp, pred_labels)
-#     print("DeepLog: ", out.loss)
