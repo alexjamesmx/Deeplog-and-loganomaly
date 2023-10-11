@@ -44,15 +44,16 @@ def run_predict(args: argparse.Namespace,
                          args.embedding_dim,
                          logger)
     model = build_model(args, vocab_size=len(vocabs))
-    normal, anomalies = predict(args,
-                                test_path,
-                                vocabs,
-                                model,
-                                store,
-                                output_dir,
-                                logger,
-                                accelerator)
-    logger.info(f"Normal: {normal} - Anomalies: {anomalies}")
+    normal, anomalies, unkown = predict(args,
+                                        test_path,
+                                        vocabs,
+                                        model,
+                                        store,
+                                        output_dir,
+                                        logger,
+                                        accelerator)
+    logger.info(
+        f"Normal: {normal} - Anomalies: {anomalies} - Unknown: {unkown}")
 
 
 def run_train(args: argparse.Namespace,
@@ -80,16 +81,17 @@ def run_train(args: argparse.Namespace,
                          logger)
     model = build_model(args, vocab_size=len(vocabs))
 
-    normal, anomalies = train(args,
-                              train_path,
-                              test_path,
-                              vocabs,
-                              model,
-                              store,
-                              output_dir,
-                              logger,
-                              accelerator)
-    logger.info(f"Normal: {normal} - Anomalies: {anomalies}")
+    normal, anomalies, unknown = train(args,
+                                       train_path,
+                                       test_path,
+                                       vocabs,
+                                       model,
+                                       store,
+                                       output_dir,
+                                       logger,
+                                       accelerator)
+    logger.info(
+        f"Normal: {normal} - Anomalies: {anomalies} - Unknown: {unknown}")
 
 
 def train(args: argparse.Namespace,
@@ -188,7 +190,7 @@ def train(args: argparse.Namespace,
         is_train=False,
         store=store,
         logger=logger)
-    print("this is how my data looks ", test_data[0])
+    # print("this is how my data looks ", test_data[0])
     test_dataset, parameters = preprocess_slidings(
         test_data=test_data,
         vocab=vocab,
@@ -198,24 +200,26 @@ def train(args: argparse.Namespace,
         logger=logger,
     )
     session_ids = test_dataset.get_session_labels()
+    print(vocab.stoi)
 
-    store.lengths
+    # store.lengths
     # store.get_test_sliding_window(length=True)
     logger.info(
         f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
 
-    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
-                                                     y_true=[],
-                                                     topk=args.topk,
-                                                     device=device,
-                                                     is_valid=False,
-                                                     num_sessions=num_sessions,
-                                                     session_ids=session_ids,
-                                                     store=store,
-                                                     )
+    normal, anomalies, unknown = trainer.predict_unsupervised(dataset=test_dataset,
+                                                              y_true=[],
+                                                              topk=args.topk,
+                                                              device=device,
+                                                              is_valid=False,
+                                                              num_sessions=num_sessions,
+                                                              session_ids=session_ids,
+                                                              args=args,
+                                                              store=store,
+                                                              )
 
-    return normal, anomalies
-    return 0, 0
+    return normal, anomalies, unknown
+    return 0, 0, 0
 
 
 def predict(args: argparse.Namespace,
@@ -282,25 +286,26 @@ def predict(args: argparse.Namespace,
         logger=logger,
     )
     session_ids = test_dataset.get_session_labels()
-    print(session_ids)
+    # print(session_ids)
 
-    # store.lengths
-    store.get_test_sliding_window()
-    # print(vocab.stoi)
+    # # store.lengths
+    # store.get_test_sliding_window()
+    print(vocab.stoi)
     logger.info(
         f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
 
-    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
-                                                     y_true=[],
-                                                     topk=args.topk,
-                                                     device=device,
-                                                     is_valid=False,
-                                                     num_sessions=num_sessions,
-                                                     session_ids=session_ids,
-                                                     store=store,
-                                                     )
-    return normal, anomalies
-    return 0, 0
+    normal, anomalies, unknown = trainer.predict_unsupervised(dataset=test_dataset,
+                                                              y_true=[],
+                                                              topk=args.topk,
+                                                              device=device,
+                                                              is_valid=False,
+                                                              num_sessions=num_sessions,
+                                                              session_ids=session_ids,
+                                                              args=args,
+                                                              store=store,
+                                                              )
+    return normal, anomalies, unknown
+    return 0, 0, 0
 
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ from data.store import Store
 
 from data.dataset import LogDataset
 from utils.helpers import evaluate_predictions
+import argparse
 
 
 class Trainer:
@@ -166,6 +167,7 @@ class Trainer:
                              device: str = 'cpu',
                              is_valid: bool = False,
                              num_sessions: Optional[List[int]] = None,
+                             args:  argparse.Namespace = None,
                              store: Store = None
                              ) -> Union[Tuple[float, float, float, float], Tuple[float, int]]:
         def find_topk(dataloader):
@@ -194,7 +196,7 @@ class Trainer:
         if is_valid:
             return find_topk(test_loader)
         else:
-            return self.predict_unsupervised_helper(test_loader=test_loader, y_true=y_true, topk=topk, num_sessions=num_sessions, session_ids=session_ids, store=store, device=device)
+            return self.predict_unsupervised_helper(test_loader=test_loader, y_true=y_true, topk=topk, num_sessions=num_sessions, session_ids=session_ids, args=args, store=store, device=device)
 
     def predict_unsupervised_helper(self,
                                     test_loader,
@@ -202,21 +204,25 @@ class Trainer:
                                     session_ids: List,
                                     topk: int,
                                     num_sessions: Optional[List[int]] = None,
+                                    args: argparse.Namespace = None,
                                     store=Store,
                                     device: str = 'cpu',
                                     ) -> Tuple[float, float, float, float]:
 
-        print("SESSION IDS ", session_ids)
-        if len(y_true) > 0:
-            y_pred = {k: 0 for k in y_true.keys()}
-        y_pred = {k: 0 for k in session_ids}
-        y_true = {k: 0 for k in session_ids}
-        count_unk_events = {k: 0 for k in y_true.keys()}
-        count_predicted_anomalies = {k: 0 for k in y_true.keys()}
+        # if len(y_true) > 0:
+        #     y_pred = {k: 0 for k in y_true.keys()}
+        y_pred = {k: {} for k in session_ids}
+
+        abnormal_actual_logs = []
+
+        # y_true = {k: 0 for k in session_ids}
+        count_unk_events = {k: 0 for k in y_pred.keys()}
+        count_predicted_anomalies = {k: 0 for k in y_pred.keys()}
         original_anomalies_unknown = []
         original_anomalies_predicted = []
+        exact_predicted_anomaly = []
+        exact_unkown_anomaly = []
         abnormal_sessions = []
-        one_before_anomaly = {}
         progress_bar = tqdm(total=len(test_loader), desc=f"Predict",
                             disable=not self.accelerator.is_local_main_process)
         for batch in test_loader:
@@ -232,6 +238,7 @@ class Trainer:
 
             support_label = (batch['sequential'] >=
                              self.num_classes).any(dim=1)
+            unknown_events = np.where(support_label == True)[0]
 
             support_label = self.accelerator.gather(
                 support_label).cpu().numpy().tolist()
@@ -249,85 +256,135 @@ class Trainer:
             # y is a list of lists containing the top-k predicted labels for each batch.
             # batch_label is a list that contains the next event label for each batch.
             # support_label is a list of Boolean values indicating whether each batch contains an unknown event.
+            # print("\n")        one_before_anomaly = {}
 
             for idx, y_i, b_label, s_label, seq, step in zip(idxs, y, batch_label, support_label, sequential, step):
-                print(
-                    f"idx: {idx}, y_i: {y_i}, b_label: {b_label}, s_label: {s_label} seq: {seq} step: {step}")
-                print("initial y_pred ", y_pred[idx])
-                if s_label == 1 and y_pred[idx] == 0:
-                    print(f"unknown anomaly")
-                    y_pred[idx] = s_label
-                    count_unk_events[idx] = s_label
-                    count_predicted_anomalies[idx] = 0
-                    original_anomalies_unknown.append(
-                        store.get_test_data(blockId=session_ids[idx]))
+                # print(
+                # f"session: {session_ids[idx]} idx: {idx}, y_i: {y_i}, b_label: {b_label}, s_label: {s_label} seq: {seq} step: {step}")
+                # initial value for all steps within a session
+                y_pred[idx][step] = 0
+                if s_label == 1:
+                    # print(f"unknown anomaly")
+                    y_pred[idx][step] = 2
+                    # count_unk_events[idx] = s_label
+                    # count_predicted_anomalies[idx] = 0
+                    # original_anomalies_unknown.append(
+                    #     store.get_test_data(blockId=session_ids[idx]))
                     # print(
                     # f"idx {session_ids[idx]}, unk: {store.get_test_data(blockId=session_ids[idx])}")
 
-                if y_pred[idx] == 0:
-                    y_pred[idx] = y_pred[idx] | (b_label not in y_i)
-                    count_predicted_anomalies[idx] = y_pred[idx]
-                    count_unk_events[idx] = 0
-                    if y_pred[idx] == 1:
-                        print(f"predicted anomaly")
-                        original_anomalies_predicted.append(
-                            store.get_test_data(blockId=session_ids[idx]))
+                else:
+                    y_pred[idx][step] = y_pred[idx][step] | (
+                        b_label not in y_i)
+                    # count_predicted_anomalies[idx] = y_pred[idx][step]
+                    # count_unk_events[idx] = 0
+
+                if step > 0 and y_pred[idx][step-1] > 0:
+                    abnormal_sessions.append({
+                        "session": session_ids[idx],
+                        "step": step,
+                        "sequence": seq,
+                    })
+                    abnormal_session = store.get_test_data(
+                        blockId=session_ids[idx])
+                    # print(abnormal_session[0])
+                    # abnormal_actual_logs.append/
+                    if y_pred[idx][step-1] == 1:
                         # print(
-                        # f"idx {session_ids[idx]}, predicted: {store.get_test_data(blockId=session_ids[idx])}")
+                        #     f"predicted anomaly at session {session_ids[idx]} idx: {idx} step {step} last index")
 
-                # for each anomalous sequence (next event is unknown or not in top-k predictions) then we add it to the list of anomalies
-                if y_pred[idx] == 1:
-                    print(y_pred[idx])
-                    print(f"anomaly store")
-                    # get next sequence
-                    print("current seq ", sequential[idx], "\n")
+                        original_anomalies_predicted.append(
+                            abnormal_session)
+                        exact_predicted_anomaly.append(
+                            {
+                                "SessionId": abnormal_session[0]["SessionId"],
+                                "EventId": abnormal_session[0]["EventId"][args.history_size + step],
+                                "SEVERITY": abnormal_session[0]["SEVERITY"][args.history_size + step],
+                                "MESSAGE": abnormal_session[0]["MESSAGE"][args.history_size + step],
+                                "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][args.history_size + step],
+                                "log_uuid": abnormal_session[0]["log_uuid"][args.history_size + step],
+                            }
+                        )
 
+                    else:
+                        print(
+                            f"predicted anomaly at session {session_ids[idx]} idx: {idx} step {step} last index")
+                        print("unk ", unknown_events)
+                        # print("desconocido ", y_pred[idx][step-1])
+                        # print("sequential ", seq)
+                        # print(
+                        #     f"unkwnown event at session {session_ids[idx]} idx: {idx} step {step}")
+                        original_anomalies_unknown.append(
+                            abnormal_session)
+                        exact_unkown_anomaly.append(
+                            {
+                                "SessionId": abnormal_session[0]["SessionId"],
+                                "EventId": abnormal_session[0]["EventId"][args.history_size + step-1],
+                                "SEVERITY": abnormal_session[0]["SEVERITY"][args.history_size + step-1],
+                                "MESSAGE": abnormal_session[0]["MESSAGE"][args.history_size + step-1],
+
+                                "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][args.history_size + step - 1],
+                                "log_uuid": abnormal_session[0]["log_uuid"][args.history_size + step - 1],
+                            }
+                        )
+
+                    # print(
+                    #     f"idx {session_ids[idx]}, predicted: {store.get_test_data(blockId=session_ids[idx])}")
+
+            # print(f"abnormal sessions: abnormal_sessions}\n")
+            # print(f"y_pred: {y_pred}\n")
             progress_bar.update(1)
         progress_bar.close()
         idxs = list(y_pred.keys())
         self.logger.info(f"Computing metrics...")
 
         if num_sessions is not None:
-            session_ids = [session_ids[idx] for idx in idxs]
+            # session_ids = [session_ids[idx] for idx in idxs]
             y_pred = [[y_pred[idx]] * num_sessions[idx] for idx in idxs]
-            y_true = [[y_true[idx]] * num_sessions[idx] for idx in idxs]
+            # # y_true = [[y_true[idx]] * num_sessions[idx] for idx in idxs]
             y_pred = np.array(list(chain.from_iterable(y_pred)))
-            y_true = np.array(list(chain.from_iterable(y_true)))
+            # y_true = np.array(list(chain.from_iterable(y_true)))
+            # #
+            #             count_predicted_anomalies = [
+            #                 [count_predicted_anomalies[idx]] * num_sessions[idx] for idx in idxs]
+            #             count_unk_events = [[count_unk_events[idx]]
+            #                                 * num_sessions[idx] for idx in idxs]
 
-            count_predicted_anomalies = [
-                [count_predicted_anomalies[idx]] * num_sessions[idx] for idx in idxs]
-            count_unk_events = [[count_unk_events[idx]]
-                                * num_sessions[idx] for idx in idxs]
+            #             count_predicted_anomalies = np.array(
+            #                 list(chain.from_iterable(count_predicted_anomalies)))
+            #             count_unk_events = np.array(
+            #                 list(chain.from_iterable(count_unk_events)))
 
-            count_predicted_anomalies = np.array(
-                list(chain.from_iterable(count_predicted_anomalies)))
-            count_unk_events = np.array(
-                list(chain.from_iterable(count_unk_events)))
+            # total_unknown_events = sum(count_unk_events)
+            # total_predicted_anomalies = sum(count_predicted_anomalies)
 
-            total_unknown_events = sum(count_unk_events)
-            total_predicted_anomalies = sum(count_predicted_anomalies)
+            # with open("./testing/unknown_anomalies.txt", "w") as f:
+            #     for original_anomaly in original_anomalies_unknown:
+            #         # self.logger.info(
+            #         # f"Unkown anomaly at:{original_anomaly}")
+            #         f.write(f"Unkown event at:\n{original_anomaly}\n\n")
 
-            with open("./testing/unknown_anomalies.txt", "w") as f:
-                for original_anomaly in original_anomalies_unknown:
-                    # self.logger.info(
-                    # f"Unkown anomaly at:{original_anomaly}")
-                    f.write(f"Unkown event at:\n{original_anomaly}\n\n")
+            # with open("./testing/predicted_anomalies.txt", "a") as f:
 
-            with open("./testing/predicted_anomalies.txt", "a") as f:
+            #     for original_anomaly in original_anomalies_predicted:
+            #         # self.logger.info(
+            #         #     f"Predicted anomaly at: {original_anomaly}")
+            #         f.write(f"Predicted anomaly at:\n{original_anomaly}\n\n")
+            # self.logger.info(
+            #     f"Total unknown events: {total_unknown_events}, Total predicted anomalies: {total_predicted_anomalies}")
 
-                for original_anomaly in original_anomalies_predicted:
-                    # self.logger.info(
-                    #     f"Predicted anomaly at: {original_anomaly}")
-                    f.write(f"Predicted anomaly at:\n{original_anomaly}\n\n")
-            self.logger.info(
-                f"Total unknown events: {total_unknown_events}, Total predicted anomalies: {total_predicted_anomalies}")
-
+            # with open("./testing/predicted.txt", "w") as f:
+            #     for log in exact_predicted_anomaly:
+            #         f.write(f"{log}\n\n")
+            # with open("./testing/unkown.txt", "w") as f:
+            #     for log in exact_unkown_anomaly:
+            #         f.write(f"{log}\n\n")
         else:
             y_pred = np.array([y_pred[idx] for idx in idxs])
 
         progress_bar.close()
-        normal, anomalies = evaluate_predictions(y_pred)
-        return normal, anomalies
+        normal, anomalies, unknowm = evaluate_predictions(y_pred)
+        return normal, anomalies, unknowm
 
     def train_on_false_positive(self,
                                 false_positive_dataset: LogDataset,

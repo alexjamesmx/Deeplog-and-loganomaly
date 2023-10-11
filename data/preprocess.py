@@ -31,10 +31,11 @@ def preprocess_data(path: str,
         return train_data, valid_data
 
     else:
-        test_data = data[:3]
+        test_data = data[:10000]
         store.set_lengths(test_length=len(test_data))
         num_sessions = [1 for _ in test_data]
-        logger.info(f"Size of test data: {len(test_data)}")
+        logger.info(
+            f"No. sessions test data: {len(test_data)} | window size: {args.window_size} | history size: {args.history_size} | step: {1} | total_sequences {args.history_size * len(test_data)}")
         return test_data, num_sessions
 
 

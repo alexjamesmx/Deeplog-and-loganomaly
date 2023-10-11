@@ -78,7 +78,8 @@ def sliding_window(data: List[Tuple[List[str], int]],
 
         sessionIds = {}
         for idx, (sessionId, eventIds, severity, timestamp, *log_uuid) in tqdm(enumerate(data), total=len(data),
-                                                                               desc=f"Train - Sliding window with size {window_size}"):
+                                                                               desc=f"Sliding window with size {window_size}"):
+
             # print(
             #     f"sessionId: {sessionId}  eventIds: {eventIds}  severity: {severity}  timestamp: {timestamp}  log_uuid: {log_uuid} \n")
 
