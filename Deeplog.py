@@ -127,7 +127,7 @@ def train(args: argparse.Namespace,
         store=store,
         logger=logger)
 
-    train_dataset, valid_dataset, train_session_idxs,  valid_session_idxs = preprocess_slidings(
+    train_dataset, valid_dataset, train_parameters, valid_parameters = preprocess_slidings(
         train_data=train_data,
         valid_data=valid_data,
         vocab=vocab,
@@ -136,6 +136,9 @@ def train(args: argparse.Namespace,
         store=store,
         logger=logger,
     )
+    valid_session_idxs = valid_dataset.get_session_labels()
+
+    # print("parameters ", train_parameters)
 
     optimizer = get_optimizer(args, model.parameters())
 
@@ -185,8 +188,8 @@ def train(args: argparse.Namespace,
         is_train=False,
         store=store,
         logger=logger)
-
-    test_dataset, session_ids = preprocess_slidings(
+    print("this is how my data looks ", test_data[0])
+    test_dataset, parameters = preprocess_slidings(
         test_data=test_data,
         vocab=vocab,
         args=args,
@@ -194,8 +197,10 @@ def train(args: argparse.Namespace,
         store=store,
         logger=logger,
     )
+    session_ids = test_dataset.get_session_labels()
 
     store.lengths
+    # store.get_test_sliding_window(length=True)
     logger.info(
         f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
 
@@ -210,6 +215,7 @@ def train(args: argparse.Namespace,
                                                      )
 
     return normal, anomalies
+    return 0, 0
 
 
 def predict(args: argparse.Namespace,
@@ -267,7 +273,7 @@ def predict(args: argparse.Namespace,
         store=store,
         logger=logger)
 
-    test_dataset, session_ids = preprocess_slidings(
+    test_dataset,  parameteres = preprocess_slidings(
         test_data=test_data,
         vocab=vocab,
         args=args,
@@ -275,8 +281,12 @@ def predict(args: argparse.Namespace,
         store=store,
         logger=logger,
     )
+    session_ids = test_dataset.get_session_labels()
+    print(session_ids)
 
-    store.lengths
+    # store.lengths
+    store.get_test_sliding_window()
+    # print(vocab.stoi)
     logger.info(
         f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
 
@@ -290,6 +300,7 @@ def predict(args: argparse.Namespace,
                                                      store=store,
                                                      )
     return normal, anomalies
+    return 0, 0
 
 
 if __name__ == "__main__":

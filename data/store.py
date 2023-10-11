@@ -25,6 +25,7 @@ class Store(object):
             "labels": None,
             "idxs": None,
             "session_idxs": None,
+            "steps": None,
             "lengths": {
                 "sequentials": None,
                 "quantitivese": None,
@@ -65,7 +66,8 @@ class Store(object):
                 "semantics": None,
                 "labels": None,
                 "sequence_idxs": None,
-                "test_sessionIds": None
+                "test_sessionIds": None,
+                "steps": None,
             }
         }
 
@@ -161,7 +163,7 @@ class Store(object):
             return pprint(self.valid_sliding_window)
 
     def set_test_sliding_window(self, sequentials=None, quantitatives=None, semantics=None, labels=None,
-                                sequence_idxs=None, test_sessionIds=None):
+                                sequence_idxs=None, test_sessionIds=None, steps=None):
         if sequentials is None and quantitatives is None and semantics is None:
             raise ValueError('Provide at least one feature type')
         self.test_sliding_window = {
@@ -171,6 +173,7 @@ class Store(object):
             "labels": labels,
             "sequence_idxs": sequence_idxs,
             "test_sessionIds": test_sessionIds,
+            "steps": steps,
             "lengths": {
                 "sequentials": len(sequentials) if sequentials is not None else None,
                 "quantitatives": len(quantitatives) if quantitatives is not None else None,
@@ -178,6 +181,7 @@ class Store(object):
                 "labels": len(labels) if labels is not None else None,
                 "sequence_idxs": len(sequence_idxs) if sequence_idxs is not None else None,
                 "test_sessionIds": len(test_sessionIds) if test_sessionIds is not None else None,
+                "steps": len(steps) if steps is not None else None,
             }
         }
 
@@ -185,9 +189,11 @@ class Store(object):
         if length:
             print("Test lengths:")
             pprint(self.test_sliding_window["lengths"])
+            return self.test_sliding_window["lengths"]
         else:
             print("Test slidings:")
             pprint(self.test_sliding_window)
+            return self.test_sliding_window
 
     def set_train_data(self, logs):
         self.train_data = logs

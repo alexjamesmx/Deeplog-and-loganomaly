@@ -1,5 +1,6 @@
 import argparse
 from logging import Logger
+import pandas as pd
 
 
 def sliding_window(df, window_size, step_size, logger: Logger):
@@ -17,7 +18,17 @@ def sliding_window(df, window_size, step_size, logger: Logger):
         _type_: _description_
     """
     log_size = df.shape[0]
-    severity, events, log_uuid, message = df["SEVERITY"], df["EVENTID"], df["log_uuid"], df["MESSAGE"]
+    timestamp, severity, events, message, log_uuid,  = df["_zl_timestamp"], df[
+        "SEVERITY"], df["EVENTID"],  df["MESSAGE"], df["log_uuid"]
+
+    severity_values = df["SEVERITY"].unique()
+    # print(f"Severity values: {severity_values}")
+    severity_mapping = {severity: i for i,
+                        severity in enumerate(severity_values)}
+    print(f"Severity mapping: {severity_mapping}")
+    # Apply the mapping to create a new numerical column
+    severity = df['SEVERITY'].map(severity_mapping)
+    print(f"Severity: {severity}")
 
     new_data = []
     start_end_index_pair = set()
@@ -31,18 +42,20 @@ def sliding_window(df, window_size, step_size, logger: Logger):
     n_sess = 0
     for (start_index, end_index) in start_end_index_pair:
         new_data.append({
-            "Label": severity[start_index:end_index].values.tolist(),
-            "EventId": events[start_index: end_index].values.tolist(),
             "SessionId": n_sess,
-            # "MESSAGE": message[start_index: end_index].values.tolist(),
-            # "log_uuid": log_uuid[start_index: end_index].values.tolist(),
+            "_zl_timestamp": timestamp[start_index:end_index].values.tolist(),
+            "SEVERITY": severity[start_index:end_index].values.tolist(),
+            "EventId": events[start_index: end_index].values.tolist(),
+            "MESSAGE": message[start_index: end_index].values.tolist(),
+            "log_uuid": log_uuid[start_index: end_index].values.tolist(),
         })
         n_sess += 1
 
     assert len(start_end_index_pair) == len(new_data)
+
     # print('there are %d instances (sliding windows) in this dataset\n' % len(start_end_index_pair))
     logger.info(f"Number of sessions: {len(new_data)}")
-    logger.info(f"session one {new_data[0]}")
+    # logger.info(f"session one {new_data[0]}")
     return new_data
 
 

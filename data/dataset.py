@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 
 
 class LogDataset(Dataset):
-    def __init__(self, sequentials=None, quantitatives=None, semantics=None, labels=None, idxs=None, session_labels=None):
+    def __init__(self, sequentials=None, quantitatives=None, semantics=None, labels=None, idxs=None, session_labels=None, steps=None):
         if sequentials is None and quantitatives is None and semantics is None:
             raise ValueError('Provide at least one feature type')
         self.sequentials = sequentials
@@ -15,22 +15,21 @@ class LogDataset(Dataset):
         self.labels = labels
         self.idxs = idxs
         self.session_labels = session_labels
+        self.steps = steps
 
     def __len__(self):
         return len(self.labels)
 
     def __getitem__(self, idx):
         item = {'label': self.labels[idx], 'idx': self.idxs[idx]}
+        if self.steps is not None:
+            item['step'] = self.steps[idx]
         if self.sequentials is not None:
             item['sequential'] = torch.from_numpy(
                 np.array(self.sequentials[idx]))
-        if self.quantitatives is not None:
-            item['quantitative'] = torch.from_numpy(
-                np.array(self.quantitatives[idx], )[:, np.newaxis]).float()
         if self.semantics is not None:
             item['semantic'] = torch.from_numpy(
                 np.array(self.semantics[idx])).float()
-
         return item
 
     def get_sequential(self):

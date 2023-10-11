@@ -49,9 +49,9 @@ def build_vocab(vocab_path: str,
 
 
 if __name__ == "__main__":
-    vocab_path = f"output/DeepLog/train0.1/w_size20_s_size20/vocabs/Deeplog.pkl"
+    vocab_path = f"output/DeepLog/train0.1/w_size50_s_size50/vocabs/Deeplog.pkl"
     data_dir = f"./dataset"
-    train_path = f"output/DeepLog/train0.1/w_size20_s_size20/train.pkl"
+    train_path = f"output/DeepLog/train0.1/w_size50_s_size50/train.pkl"
     embeddings = f"sep20-21/embeddings_average.json"
     embedding_dim = 300
     logger = None

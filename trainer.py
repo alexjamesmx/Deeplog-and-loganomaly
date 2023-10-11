@@ -143,9 +143,9 @@ class Trainer:
             # Evaluate the model on the validation set
             val_loss, val_acc, valid_k = self._valid_epoch(
                 val_loader, device, topk=topk)
-            if self.logger is not None:
-                self.logger.info(
-                    f"Epoch {epoch + 1}||Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
+            # if self.logger is not None:
+            #     self.logger.info(
+            #         f"Epoch {epoch + 1}||Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
             total_train_loss += train_loss
             total_val_loss += val_loss
             total_val_acc += val_acc
@@ -206,6 +206,7 @@ class Trainer:
                                     device: str = 'cpu',
                                     ) -> Tuple[float, float, float, float]:
 
+        print("SESSION IDS ", session_ids)
         if len(y_true) > 0:
             y_pred = {k: 0 for k in y_true.keys()}
         y_pred = {k: 0 for k in session_ids}
@@ -214,11 +215,21 @@ class Trainer:
         count_predicted_anomalies = {k: 0 for k in y_true.keys()}
         original_anomalies_unknown = []
         original_anomalies_predicted = []
+        abnormal_sessions = []
+        one_before_anomaly = {}
         progress_bar = tqdm(total=len(test_loader), desc=f"Predict",
                             disable=not self.accelerator.is_local_main_process)
         for batch in test_loader:
+            # print(f"batch: {batch}\n")
+            # print(f"sesions {batch}")
             idxs = self.accelerator.gather(
                 batch['idx']).detach().clone().cpu().numpy().tolist()
+            sequential = self.accelerator.gather(
+                batch["sequential"]).detach().clone().cpu().numpy().tolist()
+
+            step = self.accelerator.gather(
+                batch["step"]).detach().clone().cpu().numpy().tolist()
+
             support_label = (batch['sequential'] >=
                              self.num_classes).any(dim=1)
 
@@ -239,9 +250,12 @@ class Trainer:
             # batch_label is a list that contains the next event label for each batch.
             # support_label is a list of Boolean values indicating whether each batch contains an unknown event.
 
-            for idx, y_i, b_label,  s_label in zip(idxs, y, batch_label, support_label):
-
+            for idx, y_i, b_label, s_label, seq, step in zip(idxs, y, batch_label, support_label, sequential, step):
+                print(
+                    f"idx: {idx}, y_i: {y_i}, b_label: {b_label}, s_label: {s_label} seq: {seq} step: {step}")
+                print("initial y_pred ", y_pred[idx])
                 if s_label == 1 and y_pred[idx] == 0:
+                    print(f"unknown anomaly")
                     y_pred[idx] = s_label
                     count_unk_events[idx] = s_label
                     count_predicted_anomalies[idx] = 0
@@ -250,15 +264,23 @@ class Trainer:
                     # print(
                     # f"idx {session_ids[idx]}, unk: {store.get_test_data(blockId=session_ids[idx])}")
 
-                elif y_pred[idx] == 0:
+                if y_pred[idx] == 0:
                     y_pred[idx] = y_pred[idx] | (b_label not in y_i)
                     count_predicted_anomalies[idx] = y_pred[idx]
                     count_unk_events[idx] = 0
                     if y_pred[idx] == 1:
+                        print(f"predicted anomaly")
                         original_anomalies_predicted.append(
                             store.get_test_data(blockId=session_ids[idx]))
                         # print(
                         # f"idx {session_ids[idx]}, predicted: {store.get_test_data(blockId=session_ids[idx])}")
+
+                # for each anomalous sequence (next event is unknown or not in top-k predictions) then we add it to the list of anomalies
+                if y_pred[idx] == 1:
+                    print(y_pred[idx])
+                    print(f"anomaly store")
+                    # get next sequence
+                    print("current seq ", sequential[idx], "\n")
 
             progress_bar.update(1)
         progress_bar.close()
@@ -285,14 +307,18 @@ class Trainer:
             total_unknown_events = sum(count_unk_events)
             total_predicted_anomalies = sum(count_predicted_anomalies)
 
-            for original_anomaly in original_anomalies_unknown:
-                self.logger.info(
-                    f"Unkown anomaly at: {original_anomaly}")
+            with open("./testing/unknown_anomalies.txt", "w") as f:
+                for original_anomaly in original_anomalies_unknown:
+                    # self.logger.info(
+                    # f"Unkown anomaly at:{original_anomaly}")
+                    f.write(f"Unkown event at:\n{original_anomaly}\n\n")
 
-            for original_anomaly in original_anomalies_predicted:
-                self.logger.info(
-                    f"Predicted anomaly at: {original_anomaly}")
+            with open("./testing/predicted_anomalies.txt", "a") as f:
 
+                for original_anomaly in original_anomalies_predicted:
+                    # self.logger.info(
+                    #     f"Predicted anomaly at: {original_anomaly}")
+                    f.write(f"Predicted anomaly at:\n{original_anomaly}\n\n")
             self.logger.info(
                 f"Total unknown events: {total_unknown_events}, Total predicted anomalies: {total_predicted_anomalies}")
 
@@ -331,7 +357,7 @@ class Trainer:
         total_train_loss = 0
 
         for epoch in range(self.no_epochs):
-            print(f"Epoch {epoch + 1}")
+            # print(f"Epoch {epoch + 1}")
             train_loss = self._train_epoch(
                 train_loader, device, self.scheduler, progress_bar)
             total_train_loss += train_loss

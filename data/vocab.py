@@ -31,7 +31,6 @@ class Vocab(object):
         self.unk_index = len(self.itos)
         # NOTE add indices where e is the event and i is the index
         self.stoi = {e: i for i, e in enumerate(self.itos)}
-        print("stoi: ", self.stoi)
         self.semantic_vectors = read_json(emb_file)
         self.semantic_vectors = {k: v if type(v) is list else [0] * embedding_dim
                                  for k, v in self.semantic_vectors.items()}
@@ -44,14 +43,15 @@ class Vocab(object):
 
     def get_event(self, real_event, use_similar=False):
         # print(self.stoi)
-        # print("real event: ", real_event)
+
         event = self.stoi.get(real_event, self.unk_index)
         if not use_similar or event != self.unk_index:
             # print("event: ", event)
+
             return event
+        # print("hasta aca")
         if self.mapping.get(real_event) is not None:
             return self.mapping[real_event]
-
         for train_event in self.itos[:-1]:
             sim = dot(self.semantic_vectors[real_event], self.semantic_vectors[train_event]) / (norm(
                 self.semantic_vectors[real_event]) * norm(self.semantic_vectors[train_event]))

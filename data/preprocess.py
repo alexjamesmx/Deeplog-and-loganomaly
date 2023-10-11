@@ -31,7 +31,7 @@ def preprocess_data(path: str,
         return train_data, valid_data
 
     else:
-        test_data = data
+        test_data = data[:3]
         store.set_lengths(test_length=len(test_data))
         num_sessions = [1 for _ in test_data]
         logger.info(f"Size of test data: {len(test_data)}")
@@ -45,27 +45,29 @@ def preprocess_slidings(train_data=None, valid_data=None, test_data=None,
                         logger=None):
 
     if is_train:
-        sequentials, quantitatives, semantics, labels, sequence_idxs, train_sessionIds = sliding_window(
+        sequentials, quantitatives, semantics, labels, sequence_idxs, _, train_parameters, _ = sliding_window(
             train_data,
             vocab=vocab,
-            window_size=args.window_size,
+            window_size=args.history_size,
             is_train=True,
+            parameter_model=args.parameter_model,
             semantic=args.semantic,
             quantitative=args.quantitative,
             sequential=args.sequential,
             logger=logger,
         )
         store.set_train_sliding_window(sequentials, quantitatives,
-                                       semantics, labels, sequence_idxs, train_sessionIds)
+                                       semantics, labels, sequence_idxs)
 
         train_dataset = LogDataset(
             sequentials, quantitatives, semantics, labels, sequence_idxs)
 
-        sequentials, quantitatives, semantics, labels, sequence_idxs, valid_sessionIds = sliding_window(
+        sequentials, quantitatives, semantics, labels, sequence_idxs, valid_sessionIds, valid_parameters, _ = sliding_window(
             valid_data,
             vocab=vocab,
-            window_size=args.window_size,
+            window_size=args.history_size,
             is_train=True,
+            parameter_model=args.parameter_model,
             semantic=args.semantic,
             quantitative=args.quantitative,
             sequential=args.sequential,
@@ -74,22 +76,23 @@ def preprocess_slidings(train_data=None, valid_data=None, test_data=None,
         store.set_valid_sliding_window(sequentials, quantitatives,
                                        semantics, labels, sequence_idxs, valid_sessionIds)
         valid_dataset = LogDataset(
-            sequentials, quantitatives, semantics, labels, sequence_idxs)
-        return train_dataset, valid_dataset, train_sessionIds, valid_sessionIds
+            sequentials, quantitatives, semantics, labels, sequence_idxs, valid_sessionIds)
+        return train_dataset, valid_dataset, train_parameters, valid_parameters
 
     else:
-        sequentials, quantitatives, semantics, labels, sequence_idxs, test_sessionIds = sliding_window(
+        sequentials, quantitatives, semantics, labels, sequence_idxs, test_sessionIds, test_parameters, steps = sliding_window(
             test_data,
             vocab=vocab,
-            window_size=args.window_size,
+            window_size=args.history_size,
             is_train=True,
+            parameter_model=args.parameter_model,
             semantic=args.semantic,
             quantitative=args.quantitative,
             sequential=args.sequential,
             logger=logger
         )
         test_dataset = LogDataset(
-            sequentials, quantitatives, semantics, labels, sequence_idxs)
+            sequentials, quantitatives, semantics, labels, sequence_idxs, test_sessionIds, steps)
         store.set_test_sliding_window(sequentials, quantitatives,
-                                      semantics, labels, sequence_idxs, test_sessionIds)
-        return test_dataset, test_sessionIds
+                                      semantics, labels, sequence_idxs, test_sessionIds, steps)
+        return test_dataset, test_parameters

@@ -8,7 +8,6 @@ embeddings: sep20-21/embeddings_average.json
 grouping: sliding
 sequential: true
 semantic: false
-quantitative: false
 is_chronological: true
 
 # model configuration
@@ -17,7 +16,8 @@ embedding_dim: 300 # default: 300, can range: from 32 to 1024
 dropout: 0.1 # dropout rate: from 0.0 to 0.5
 hidden_size: 64 # hidden size: from 32 to 1024 default: same as h
 num_layers: 2 # number of layers: from 1 to 8
-topk: 9 # default
+topk: 3 # default
+history_size: 5
 
 # optimizer configuration
 scheduler: linear
@@ -35,12 +35,13 @@ batch_size: 2048 # range: from 32 to 4096
 max_epoch: 12 # range: from 1 to 100
 
 # common configuration
-step_size: 20
-window_size: 20
+step_size: 10
+window_size: 10
 train_size: 0.1
 valid_ratio: 0.1
 output_dir: ./output/
-is_train: true
-is_load: false
+is_train: false
+is_load: true
 is_update: false
 see_config: false
+parameter_model: true
