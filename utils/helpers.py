@@ -167,20 +167,17 @@ def evaluate_predictions(predictions: List[int]) -> Tuple[int, int]:
     # predictions is a list of objects, where each key is the step and the value is the prediction
     anomalies = 0
     normal = 0
-    unkown = 0
     for obj_sequence in predictions:
         # print(obj_sequence)
         for step, prediction in obj_sequence.items():
             if prediction == 1:
                 anomalies += 1
-            elif prediction == 2:
-                unkown += 1
             else:
                 normal += 1
 
     print(f"evaluate predictions: {anomalies} ")
 
-    # anom/aelies = sum(predictions)
+    # anomaelies = sum(predictions)
     # normal = total_samples - anomalies
 
-    return normal, anomalies, unkown
+    return normal, anomalies

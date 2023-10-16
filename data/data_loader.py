@@ -7,7 +7,6 @@ import argparse
 from logging import Logger, getLogger
 from data.window import sliding_window
 from collections import Counter
-from multiprocessing import Pool
 
 import pickle
 from accelerate import Accelerator
@@ -27,36 +26,56 @@ def process_dataset(logger: Logger,
                     output_dir: str,
                     args: argparse.Namespace
                     ):
+    """
+    Convert and read txt file to json 
+    Create windowed sessions from json file
+    Split windows to train and test
+    Create or load train and test pkl files from txt file
 
-    # load if exists
-    if os.path.exists(os.path.join(output_dir, "train.pkl")) and os.path.exists(os.path.join(output_dir, "test.pkl")) and os.path.exists(os.path.join(args.data_dir+args.dataset_name, "data.json")):
+    Args:
+        logger (Logger)
+        output_dir (str) : output directory to save train and test pkl files 
+        args (argparse.Namespace)
+
+    Raises:
+        NotImplementedError: File does not exist
+        NotImplementedError: Grouping method is not implemented
+
+    Returns:
+        _type_: train and test pkl file paths
+    """
+
+    # load train, test pkl's if exists "./output/.../train.pkl", "./output/.../test.pkl" and "./dataset/{dataset_name}/data.json"
+    if os.path.exists(os.path.join(output_dir, "train.pkl")) and os.path.exists(os.path.join(output_dir, "test.pkl")) and os.path.exists(os.path.join(args.data_dir+args.dataset_folder, "data.json")):
         logger.info(
             f"Loading {output_dir}/train.pkl and {output_dir}/test.pkl")
         return os.path.join(output_dir, "train.pkl"), os.path.join(output_dir, "test.pkl")
 
-    # load if exists ./dataset/{dataset_name}/data.json
-    json_file = f"{args.data_dir}{args.dataset_name}/data.json"
-    if os.path.exists(json_file):
-        logger.info(f"Loading {json_file}")
-        df = pd.read_json(json_file, orient='records', lines=True)
-    # create txt to json if not exists in ./dataset/{dataset_name}/data.json
-    else:
-        file_data = f"{args.data_dir}/{args.dataset_name}/data.txt"
-        pool = Pool()
-        json_objects, count_errors = load_json_objects(
-            file_data, num_lines=220000)
-        count_keys = pool.apply(count_json_keys, args=(json_objects,))
-        df = pd.DataFrame(json_objects)
-        print(f"Total data size: {len(json_objects)}, errors {count_errors}")
-        # print(count_json_keys(json_objects))
-        print(count_keys)
-        df.to_json(json_file, orient='records', lines=True)
+    # load json if exists  ./dataset/{dataset_name}/{log_file}.json
+    json_file_path = f"{args.data_dir}{args.dataset_folder}{args.log_file}.json"
+    txt_file_path = f"{args.data_dir}{args.dataset_folder}{args.log_file}.txt"
 
-    logger.info(f"Data size: {len(df)}")
-    if args.grouping == "session":
-        print("Session window")
-    elif args.grouping == "sliding":
-        print("Sliding window")
+    if os.path.isfile(json_file_path):
+        logger.info(f"Loading {json_file_path}")
+        df = pd.read_json(json_file_path, orient='records', lines=True)
+    else:
+
+        if not os.path.isfile(txt_file_path):
+            raise NotImplementedError(
+                f"The file {txt_file_path}.txt does not exist")
+
+        json_objects, count_errors = load_json_objects(
+            txt_file_path, num_lines=100000)
+        # count keys optional for debugging
+        count_keys = count_json_keys(json_objects)
+        logger.info(
+            f"Total logs in {txt_file_path}: {len(json_objects)}, errors {count_errors}")
+        print(count_keys)
+        df = pd.DataFrame(json_objects)
+        # save txt to json
+        df.to_json(json_file_path, orient='records', lines=True)
+
+    if args.grouping == "sliding":
         window_df = sliding_window(
             df=df, window_size=args.window_size, step_size=args.step_size,
             logger=logger)
@@ -64,20 +83,18 @@ def process_dataset(logger: Logger,
         train_window = window_df[:n_train]
         test_window = window_df[n_train:]
         logger.info(
-            f"train size: {len(train_window)}, test size: {len(test_window)} n_train: {n_train} train_size: {args.train_size} len(window_df): {len(window_df)} = {args.train_size * len(window_df)}")
+            f"train sessions: {len(train_window)}, test sessions: {len(test_window)} train_size: {args.train_size} len(window_df): {len(window_df)}")
     else:
         raise NotImplementedError(
             f"{args.grouping} grouping method is not implemented")
 
-    print(
-        f"Train size: {len(train_window)}, Test size: {len(test_window)} n_train: {n_train}")
-    logger.info(
-        f"Saving sessions at {output_dir}/train.pkl and {output_dir}/test.pkl")
     os.makedirs(output_dir, exist_ok=True)
     with open(os.path.join(output_dir, "train.pkl"), mode="wb") as f:
         pickle.dump(train_window, f)
     with open(os.path.join(output_dir, "test.pkl"), mode="wb") as f:
         pickle.dump(test_window, f)
+    logger.info(
+        f"Saved train.pkl and test.pkl at {output_dir}")
     return os.path.join(output_dir, "train.pkl"), os.path.join(output_dir, "test.pkl")
 
 
@@ -91,11 +108,15 @@ def load_json_objects(data_dir, num_lines=None):
                 break
             try:
                 json_obj = json.loads(line)
-            except Exception as e:
+                if isinstance(json_obj, dict):
+                    json_objects.append(json_obj)
+                    line_count += 1
+                else:
+                    # print(f"Error: {line}")
+                    count_errors += 1
+            except json.JSONDecodeError as e:
+                # print(e)
                 count_errors += 1
-                continue
-            json_objects.append(json_obj)
-            line_count += 1
     return json_objects, count_errors
 
 

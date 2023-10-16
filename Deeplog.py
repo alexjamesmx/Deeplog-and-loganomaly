@@ -28,34 +28,6 @@ logging.basicConfig(
 accelerator = Accelerator()
 
 
-def run_predict(args: argparse.Namespace,
-                output_dir: str,
-                store: Store,
-                logger: Logger = getLogger("__name__")):
-    logger.info("Start predicting :)")
-    train_path, test_path = process_dataset(logger=logger,
-                                            output_dir=output_dir,
-                                            args=args)
-    vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
-    vocabs = build_vocab(vocab_path,
-                         args.data_dir,
-                         train_path,
-                         args.embeddings,
-                         args.embedding_dim,
-                         logger)
-    model = build_model(args, vocab_size=len(vocabs))
-    normal, anomalies, unkown = predict(args,
-                                        test_path,
-                                        vocabs,
-                                        model,
-                                        store,
-                                        output_dir,
-                                        logger,
-                                        accelerator)
-    logger.info(
-        f"Normal: {normal} - Anomalies: {anomalies} - Unknown: {unkown}")
-
-
 def run_train(args: argparse.Namespace,
               output_dir: str,
               store: Store,
@@ -65,10 +37,12 @@ def run_train(args: argparse.Namespace,
 
     Args:
         args (argparse.Namespace): Arguments 
-        store (Store)
+        output_dir (str): Output directory
+        store (Store): Class to store original and preprocessed data
         logger (Logger)
+
     """
-    logger.info("Start training :)")
+    logger.info("Start training")
     train_path, test_path = process_dataset(logger=logger,
                                             output_dir=output_dir,
                                             args=args)
@@ -81,17 +55,15 @@ def run_train(args: argparse.Namespace,
                          logger)
     model = build_model(args, vocab_size=len(vocabs))
 
-    normal, anomalies, unknown = train(args,
-                                       train_path,
-                                       test_path,
-                                       vocabs,
-                                       model,
-                                       store,
-                                       output_dir,
-                                       logger,
-                                       accelerator)
-    logger.info(
-        f"Normal: {normal} - Anomalies: {anomalies} - Unknown: {unknown}")
+    train(args,
+          train_path,
+          test_path,
+          vocabs,
+          model,
+          store,
+          output_dir,
+          logger,
+          accelerator)
 
 
 def train(args: argparse.Namespace,
@@ -105,6 +77,7 @@ def train(args: argparse.Namespace,
           accelerator: Accelerator = Accelerator()
           ) -> Tuple[float, float]:
     """
+    Process data
     Train model
 
     Args:
@@ -121,14 +94,15 @@ def train(args: argparse.Namespace,
     Returns:
         Tuple[float, float]: Metrics
     """
-
+    # get train and valid data
     train_data, valid_data = preprocess_data(
         path=train_path,
         args=args,
         is_train=True,
         store=store,
         logger=logger)
-
+    # turn event_ids sequences into vocab indexes and pad them
+    # parameters still not implemented
     train_dataset, valid_dataset, train_parameters, valid_parameters = preprocess_slidings(
         train_data=train_data,
         valid_data=valid_data,
@@ -138,6 +112,7 @@ def train(args: argparse.Namespace,
         store=store,
         logger=logger,
     )
+    # valid session indexes for recommending topk only (evaluation)
     valid_session_idxs = valid_dataset.get_session_labels()
 
     # print("parameters ", train_parameters)
@@ -167,7 +142,9 @@ def train(args: argparse.Namespace,
     )
 
     logger.info(
-        f"/nStart training {args.model_name} model on {device} device\n")
+        f"Start training {args.model_name} model on {device} device\n")
+
+    # print("1 train data ", train_dataset[0])
 
     train_loss, val_loss, val_acc, _ = trainer.train(device=device,
                                                      save_dir=f"{output_dir}/models",
@@ -175,22 +152,23 @@ def train(args: argparse.Namespace,
                                                      topk=args.topk)
     logger.info(
         f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
-    recommend_topk = trainer.predict_unsupervised(valid_dataset,
-                                                  [],
-                                                  valid_session_idxs,
-                                                  topk=args.topk,
-                                                  device=device,
-                                                  is_valid=True)
+    minimum_recommended_topk = trainer.predict_unsupervised(valid_dataset,
+                                                            valid_session_idxs,
+                                                            topk=args.topk,
+                                                            device=device,
+                                                            is_valid=True)
     logger.info(
-        f"Top-{args.topk} Recommendation: {recommend_topk}\n")
+        f"Top-{args.topk} Min recommendation: {minimum_recommended_topk}\n")
 
-    test_data, num_sessions = preprocess_data(
+    # Get test data
+    test_data = preprocess_data(
         path=test_path,
         args=args,
         is_train=False,
         store=store,
         logger=logger)
     # print("this is how my data looks ", test_data[0])
+    # turn event_ids sequences into vocab indexes and pad them
     test_dataset, parameters = preprocess_slidings(
         test_data=test_data,
         vocab=vocab,
@@ -199,6 +177,7 @@ def train(args: argparse.Namespace,
         store=store,
         logger=logger,
     )
+    # obtain session indexes
     session_ids = test_dataset.get_session_labels()
     print(vocab.stoi)
 
@@ -207,19 +186,46 @@ def train(args: argparse.Namespace,
     logger.info(
         f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
 
-    normal, anomalies, unknown = trainer.predict_unsupervised(dataset=test_dataset,
-                                                              y_true=[],
-                                                              topk=args.topk,
-                                                              device=device,
-                                                              is_valid=False,
-                                                              num_sessions=num_sessions,
-                                                              session_ids=session_ids,
-                                                              args=args,
-                                                              store=store,
-                                                              )
+    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
+                                                     #  y_true=[],
+                                                     topk=args.topk,
+                                                     device=device,
+                                                     is_valid=False,
+                                                     #  num_sessions=num_sessions,
+                                                     session_ids=session_ids,
+                                                     args=args,
+                                                     store=store,
+                                                     )
+    logger.info(
+        f"Normal: {normal} - Anomalies: {anomalies}")
 
-    return normal, anomalies, unknown
-    return 0, 0, 0
+
+def run_predict(args: argparse.Namespace,
+                output_dir: str,
+                store: Store,
+                logger: Logger = getLogger("__name__")):
+    logger.info("Start predicting :)")
+    train_path, test_path = process_dataset(logger=logger,
+                                            output_dir=output_dir,
+                                            args=args)
+    vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
+    vocabs = build_vocab(vocab_path,
+                         args.data_dir,
+                         train_path,
+                         args.embeddings,
+                         args.embedding_dim,
+                         logger)
+    model = build_model(args, vocab_size=len(vocabs))
+    normal, anomalies = predict(args,
+                                test_path,
+                                vocabs,
+                                model,
+                                store,
+                                output_dir,
+                                logger,
+                                accelerator)
+    logger.info(
+        f"Normal: {normal} - Anomalies: {anomalies} ")
 
 
 def predict(args: argparse.Namespace,
@@ -232,7 +238,7 @@ def predict(args: argparse.Namespace,
             accelerator: Accelerator = Accelerator()
             ) -> Tuple[float, float]:
     """
-    Train model
+    Predict model
 
     Args:
         args (argparse.Namespace): Arguments
@@ -294,23 +300,29 @@ def predict(args: argparse.Namespace,
     logger.info(
         f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
 
-    normal, anomalies, unknown = trainer.predict_unsupervised(dataset=test_dataset,
-                                                              y_true=[],
-                                                              topk=args.topk,
-                                                              device=device,
-                                                              is_valid=False,
-                                                              num_sessions=num_sessions,
-                                                              session_ids=session_ids,
-                                                              args=args,
-                                                              store=store,
-                                                              )
-    return normal, anomalies, unknown
-    return 0, 0, 0
+    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
+                                                     y_true=[],
+                                                     topk=args.topk,
+                                                     device=device,
+                                                     is_valid=False,
+                                                     num_sessions=num_sessions,
+                                                     session_ids=session_ids,
+                                                     args=args,
+                                                     store=store,
+                                                     )
+    logger.info(
+        f"Normal: {normal} - Anomalies: {anomalies}")
 
 
 if __name__ == "__main__":
+    # basic config
     parser = arg_parser()
     args = parser.parse_args()
+
+    logger = getLogger(args.model_name)
+    logger.info(accelerator.state)
+    logger.setLevel(
+        logging.INFO if accelerator.is_local_main_process else logging.ERROR)
 
     if args.config_file is not None and os.path.isfile(args.config_file):
         config_file = args.config_file
@@ -320,25 +332,22 @@ if __name__ == "__main__":
             for k, v in config_args.__dict__.items():
                 if v is not None:
                     setattr(args, k, v)
-        print(f"Loaded config from {config_file}!")
+        logger.info(f"Loaded config from {config_file}!")
     else:
-        print(f"Loaded config from command line!")
+        logger.info(f"Loaded config from command line!")
 
-    logger = getLogger(args.model_name)
-    logger.info(accelerator.state)
-    logger.setLevel(
-        logging.INFO if accelerator.is_local_main_process else logging.ERROR)
+    output_dir = f"{args.output_dir}{args.dataset_folder}/{args.model_name}/train{args.train_size}/h_size{args.window_size}_s_size{args.history_size}/"
 
-    output_dir = f"{args.output_dir}{args.model_name}/train{args.train_size}/w_size{args.window_size}_s_size{args.step_size}/"
     os.makedirs(f"{output_dir}/vocabs", exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
 
     store = Store(output_dir, logger)
 
-    os.makedirs(args.output_dir, exist_ok=True)
     logger.info(f"Output directory: {output_dir}")
-    if args.is_train and not args.is_load and not args.is_update:
+
+    if args.is_train and not args.is_load:
         run_train(args, output_dir, store, logger)
-    elif args.is_load and not args.is_train and not args.is_update:
+    elif args.is_load and not args.is_train:
         run_predict(args, output_dir, store, logger)
     else:
         raise ValueError("Either train, load or update must be True")

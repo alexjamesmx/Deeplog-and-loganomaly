@@ -13,12 +13,28 @@ def preprocess_data(path: str,
                     is_train: bool,
                     store: Store,
                     logger) -> Tuple[list, list] or list:
+    """
+    Split sessions to train, valid and test
+    Store train, valid and test data in store class
+
+    Args:
+        path (str): _description_
+        args (_type_): _description_
+        is_train (bool): _description_
+        store (Store): _description_
+        logger (_type_): _description_
+
+    Returns:
+        Tuple[list, list] or list: _description_
+    """
+
     data, stat = load_features(path, is_train=is_train, store=store)
 
     phase_message = "Train" if is_train else "Test"
     logger.info(
-        f"{phase_message} data length: {len(data)}, statistics: {stat}")
+        f"{phase_message} data length: {len(data)} (sessions), statistics: {stat} total_train_logs {len(data * args.window_size)}")
     if is_train:
+        data = data
         n_valid = int(len(data) * args.valid_ratio)
         train_data, valid_data = data[:-n_valid], data[-n_valid:]
 
@@ -31,12 +47,12 @@ def preprocess_data(path: str,
         return train_data, valid_data
 
     else:
-        test_data = data[:10000]
+        test_data = data
         store.set_lengths(test_length=len(test_data))
-        num_sessions = [1 for _ in test_data]
+        # num_sessions = [1 for _ in test_data]
         logger.info(
             f"No. sessions test data: {len(test_data)} | window size: {args.window_size} | history size: {args.history_size} | step: {1} | total_sequences {args.history_size * len(test_data)}")
-        return test_data, num_sessions
+        return test_data
 
 
 def preprocess_slidings(train_data=None, valid_data=None, test_data=None,
@@ -44,6 +60,25 @@ def preprocess_slidings(train_data=None, valid_data=None, test_data=None,
                         is_train=bool,
                         store=Store,
                         logger=None):
+    """
+    Transform sessions to sliding windows
+    Store train, valid and test sliding windows in store class and return datasets
+    E.g see example on ./testing/slidings.txt
+
+
+    Args:
+        train_data: List train sessions
+        valid_data: List valid sessions
+        test_data: List test sessions
+        vocab: Vocab class
+        args: (argparse.Namespace)
+        is_train (bool)   
+        store (Store)
+        logger  
+
+    Returns:
+        train_dataset, valid_dataset, train_parameters, valid_parameters or test_dataset, test_parameters
+    """
 
     if is_train:
         sequentials, quantitatives, semantics, labels, sequence_idxs, _, train_parameters, _ = sliding_window(

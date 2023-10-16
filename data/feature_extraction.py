@@ -74,69 +74,67 @@ def sliding_window(data: List[Tuple[List[str], int]],
     """
     log_sequences = []
 
-    if is_train:
+    sessionIds = {}
+    for idx, (sessionId, eventIds, severity, timestamp, *log_uuid) in tqdm(enumerate(data), total=len(data),
+                                                                           desc=f"Sliding window with size {window_size}"):
 
-        sessionIds = {}
-        for idx, (sessionId, eventIds, severity, timestamp, *log_uuid) in tqdm(enumerate(data), total=len(data),
-                                                                               desc=f"Sliding window with size {window_size}"):
+        # print(
+        #     f"sessionId: {sessionId}  eventIds: {eventIds}  severity: {severity}  timestamp: {timestamp}  log_uuid: {log_uuid} \n")
+
+        # event_ids_list = list(eventIds)
+        # add pading if the length of the line is less than the window size (when window = n, but last window has k < n  events, add n - k  padding events)
+        eventIds = eventIds + \
+            [vocab.pad_token] * (window_size - len(eventIds) + 1)
+
+        timestamp_list = list(timestamp)
+
+        sessionIds[idx] = (sessionId)
+        for i in range(len(eventIds) - window_size):
+            # get the index of the event in the window sequence
+            # print(f"total events: {(eventIds)}")
+            # print(
+            # f"TEST: i + window_size({window_size})= {i + window_size} ")
+            label = vocab.get_event(eventIds[i + window_size],
+                                    use_similar=quantitative)  # use_similar only for LogAnomal
+            # print(f"label i = {i + window_size} label result: {label}\n")
+
+            seq = eventIds[i: i + window_size]
+            # print(f"sequence i = {i}: {i + window_size} \n")
+            sequential_pattern = [vocab.get_event(
+                event, use_similar=quantitative) for event in seq]
+
+            sequence = {'nSec': i, 'sequential': sequential_pattern}
+            sequence['label'] = label
+            sequence['idx'] = idx
+            # print("sequence: ", sequence, '\n')
+
+            # build parameters value matrix
+            if parameter_model:
+                current_timestamp = int(timestamp_list[i])
+                last_timestamp = 0
+                if i != 0:
+                    last_timestamp = int(timestamp_list[i-1])
+                t_difference = current_timestamp - last_timestamp
+                sequence["parameters_values"] = np.array(
+                    [t_difference, severity[i]])
 
             # print(
-            #     f"sessionId: {sessionId}  eventIds: {eventIds}  severity: {severity}  timestamp: {timestamp}  log_uuid: {log_uuid} \n")
+            #     f"tcurrent_t_last: {tcurrent_t_last}: {current_timestamp} - {last_timestamp} \n")
+            log_sequences.append(sequence)
+    sequentials, quantitatives, semantics = None, None, None
+    if sequential:
+        sequentials = [seq['sequential'] for seq in log_sequences]
+        steps = [seq['nSec'] for seq in log_sequences]
+    if quantitative:
+        quantitatives = [seq['quantitative'] for seq in log_sequences]
+    if semantic:
+        print("semantic \n")
+        semantics = [seq['semantic'] for seq in log_sequences]
+    if parameter_model:
+        parameters = [seq['parameters_values']
+                      for seq in log_sequences]
+    labels = [seq['label'] for seq in log_sequences]
+    sequence_idxs = [seq['idx'] for seq in log_sequences]
+    logger.info(f"Number of sequences: {len(labels)}")
 
-            # event_ids_list = list(eventIds)
-            # add pading if the length of the line is less than the window size (when window = n, but last window has k < n  events, add n - k  padding events)
-            eventIds = eventIds + \
-                [vocab.pad_token] * (window_size - len(eventIds) + 1)
-
-            timestamp_list = list(timestamp)
-
-            sessionIds[idx] = (sessionId)
-            for i in range(len(eventIds) - window_size):
-                # get the index of the event in the window sequence
-                # print(f"total events: {(eventIds)}")
-                # print(
-                # f"TEST: i + window_size({window_size})= {i + window_size} ")
-                label = vocab.get_event(eventIds[i + window_size],
-                                        use_similar=quantitative)  # use_similar only for LogAnomal
-                # print(f"label i = {i + window_size} label result: {label}\n")
-
-                seq = eventIds[i: i + window_size]
-                # print(f"sequence i = {i}: {i + window_size} \n")
-                sequential_pattern = [vocab.get_event(
-                    event, use_similar=quantitative) for event in seq]
-
-                sequence = {'nSec': i, 'sequential': sequential_pattern}
-                sequence['label'] = label
-                sequence['idx'] = idx
-                # print("sequence: ", sequence, '\n')
-
-                # build parameters value matrix
-                if parameter_model:
-                    current_timestamp = int(timestamp_list[i])
-                    last_timestamp = 0
-                    if i != 0:
-                        last_timestamp = int(timestamp_list[i-1])
-                    t_difference = current_timestamp - last_timestamp
-                    sequence["parameters_values"] = np.array(
-                        [t_difference, severity[i]])
-
-                # print(
-                #     f"tcurrent_t_last: {tcurrent_t_last}: {current_timestamp} - {last_timestamp} \n")
-                log_sequences.append(sequence)
-        sequentials, quantitatives, semantics = None, None, None
-        if sequential:
-            sequentials = [seq['sequential'] for seq in log_sequences]
-            steps = [seq['nSec'] for seq in log_sequences]
-        if quantitative:
-            quantitatives = [seq['quantitative'] for seq in log_sequences]
-        if semantic:
-            print("semantic \n")
-            semantics = [seq['semantic'] for seq in log_sequences]
-        if parameter_model:
-            parameters = [seq['parameters_values']
-                          for seq in log_sequences]
-        labels = [seq['label'] for seq in log_sequences]
-        sequence_idxs = [seq['idx'] for seq in log_sequences]
-        logger.info(f"Number of sequences: {len(labels)}")
-
-        return sequentials, quantitatives, semantics, labels, sequence_idxs, sessionIds, parameters, steps
+    return sequentials, quantitatives, semantics, labels, sequence_idxs, sessionIds, parameters, steps

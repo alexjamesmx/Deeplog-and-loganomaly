@@ -21,13 +21,13 @@ def sliding_window(df, window_size, step_size, logger: Logger):
     timestamp, severity, events, message, log_uuid,  = df["_zl_timestamp"], df[
         "SEVERITY"], df["EVENTID"],  df["MESSAGE"], df["log_uuid"]
 
-    severity_values = df["SEVERITY"].unique()
+    # severity_values = df["SEVERITY"].unique()
     # print(f"Severity values: {severity_values}")
-    severity_mapping = {severity: i for i,
-                        severity in enumerate(severity_values)}
-    print(f"Severity mapping: {severity_mapping}")
+    # severity_mapping = {severity: i for i,
+    # severity in enumerate(severity_values)}
+    # print(f"Severity mapping: {severity_mapping}")
     # Apply the mapping to create a new numerical column
-    severity = df['SEVERITY'].map(severity_mapping)
+    # severity = df['SEVERITY'].map(severity_mapping)
     print(f"Severity: {severity}")
 
     new_data = []
