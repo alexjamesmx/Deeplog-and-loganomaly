@@ -50,8 +50,8 @@
 data_dir: ./dataset
 output_dir: ./output/
 # embeddings: sep20-21/embeddings_average.json
-dataset_folder: /sep21-22/
-log_file: sep21-22
+dataset_folder: /sep20-21/
+log_file: data
 
 # data preprocessing
 grouping: sliding
@@ -88,8 +88,8 @@ step_size: 10
 window_size: 10
 train_size: 0.1
 valid_ratio: 0.1
-is_train: true
-is_load: false
+is_train: false
+is_load: true
 # is_update: false
 see_config: false
 parameter_model: true

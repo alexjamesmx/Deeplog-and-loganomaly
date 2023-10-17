@@ -1,161 +1,58 @@
-import numpy as np
-import os
-import torch
-import logging
-import argparse
-
-from sklearn.metrics import accuracy_score, top_k_accuracy_score
-from tqdm import tqdm
-from transformers import get_scheduler
-from torch.utils.data import DataLoader
-from typing import Any, Optional, List, Union, Tuple
-
-from data.store import Store
+from utils.helpers import get_optimizer
+from data.preprocess import preprocess_data, preprocess_slidings
 from data.dataset import LogDataset
+from typing import List, Tuple, Union
+import argparse
+from data.store import Store
+import torch
+import numpy as np
+from torch.utils.data import DataLoader
+from tqdm import tqdm
 from utils.helpers import evaluate_predictions
 
 
-class Trainer:
-    def __init__(self, model,
-                 train_dataset: LogDataset = None,
-                 valid_dataset: LogDataset = None,
-                 is_train: bool = True,
-                 optimizer: torch.optim.Optimizer = None,
-                 no_epochs: int = 100,
-                 batch_size: int = 32,
-                 scheduler_type: str = 'linear',
-                 warmup_rate: float = 0.1,
-                 accumulation_step: int = 1,
-                 logger: logging.Logger = None,
-                 accelerator: Any = None,
-                 num_classes: int = 2,
-                 ):
+class Predicter():
+
+    def __init__(self,
+                 model,
+                 args,
+                 logger,
+                 store,
+                 vocabs):
         self.model = model
-        self.train_dataset = train_dataset
-        self.valid_dataset = valid_dataset
-        self.is_train = is_train
-        self.optimizer = optimizer
-        self.no_epochs = no_epochs
-        self.batch_size = batch_size
-        self.scheduler_type = scheduler_type
-        self.warmup_rate = warmup_rate
-        self.accumulation_step = accumulation_step
+        self.is_train = False
+        self.no_epochs = args.max_epoch
+        self.batch_size = args.batch_size
+        self.scheduler_type = args.scheduler
+        self.warmup_rate = args.warmup_rate
+        self.accumulation_step = args.accumulation_step
         self.logger = logger
-        self.accelerator = accelerator
-        self.num_classes = num_classes
+        self.accelerator = args.accelerator
+        self.optimizer = get_optimizer(args, self.model.parameters())
+        self.num_classes = len(vocabs)
+        self.device = self.accelerator.device
+        self.model_name = args.model_name
+        self.topk = args.topk
+        self.args = args
+        self.store = store
         self.scheduler = None
-        self.original_anomalies = None
 
-    def _train_epoch(self,
-                     train_loader: DataLoader,
-                     device: str,
-                     scheduler: Any,
-                     progress_bar: Any):
-        self.model.train()
-        self.optimizer.zero_grad()
-        total_loss = 0
-        for idx, batch in enumerate(train_loader):
+        self.test_sessions = preprocess_data(
+            path=args.test_path,
+            args=args,
+            is_train=self.is_train,
+            store=store,
+            logger=logger)
 
-            outputs = self.model(batch, device=device)
-            loss = outputs.loss
-            total_loss += loss.item()
-            loss = loss / self.accumulation_step
-            self.accelerator.backward(loss)
-            if (idx + 1) % self.accumulation_step == 0 or idx == len(train_loader) - 1:
-                self.optimizer.step()
-                self.optimizer.zero_grad()
-                scheduler.step()
-                progress_bar.update(1)
-                progress_bar.set_postfix({'loss': total_loss / (idx + 1)})
-
-        return total_loss / len(train_loader)
-
-    def _valid_epoch(self,
-                     val_loader: DataLoader,
-                     device: str,
-                     topk: int = 1):
-        self.model.eval()
-        y_pred = []
-        y_true = []
-        losses = []
-        for idx, batch in enumerate(val_loader):
-            del batch['idx']
-            with torch.no_grad():
-                outputs = self.model(batch, device=device)
-            loss = outputs.loss
-            probabilities = self.accelerator.gather(outputs.probabilities)
-            y_pred.append(probabilities.detach().clone().cpu().numpy())
-            losses.append(loss.item())
-            label = self.accelerator.gather(batch['label'])
-            y_true.append(label.detach().clone().cpu().numpy())
-        # concatenate because there are arrays of arrays
-        y_pred = np.concatenate(y_pred)
-        y_true = np.concatenate(y_true)
-        loss = np.mean(losses)
-        if topk > 1:
-            for k in range(1, self.num_classes + 1):
-                acc = top_k_accuracy_score(
-                    y_true, y_pred, k=k, labels=np.arange(self.num_classes))
-                if acc >= 0.997:
-                    return loss, acc, k
-        else:
-            acc = accuracy_score(y_true, np.argmax(y_pred, axis=1))
-        return loss, acc, topk
-
-    def train(self,
-              device: str = 'cpu',
-              save_dir: str = None,
-              model_name: str = None,
-              topk: int = 9):
-
-        train_loader = DataLoader(
-            self.train_dataset, batch_size=self.batch_size, shuffle=False)
-        val_loader = DataLoader(
-            self.valid_dataset, batch_size=self.batch_size, shuffle=False)
-        self.model.to(device)
-        self.model, self.optimizer, train_loader, val_loader = self.accelerator.prepare(
-            self.model, self.optimizer, train_loader, val_loader
+        self.test_dataset,  self.test_parameters = preprocess_slidings(
+            test_data=self.test_sessions,
+            vocab=vocabs,
+            args=args,
+            is_train=self.is_train,
+            store=store,
+            logger=logger,
         )
-        # Compute the number of training steps
-        num_training_steps = int(
-            self.no_epochs * len(train_loader) / self.accumulation_step)
-        # Compute the number of warmup steps
-        num_warmup_steps = int(num_training_steps * self.warmup_rate)
-        # Create the scheduler
-        self.scheduler = get_scheduler(
-            self.scheduler_type,
-            optimizer=self.optimizer,
-            num_warmup_steps=num_warmup_steps,
-            num_training_steps=num_training_steps
-        )
-        # Create a progress bar
-        progress_bar = tqdm(range(num_training_steps), desc=f"Training",
-                            disable=not self.accelerator.is_local_main_process)
-        total_train_loss = 0
-        total_val_loss = 0
-        total_val_acc = 0
-        # Train the model
-        for epoch in range(self.no_epochs):
-            # Train the model for one epoch
-            train_loss = self._train_epoch(
-                train_loader, device, self.scheduler, progress_bar)
-            # Evaluate the model on the validation set
-            val_loss, val_acc, valid_k = self._valid_epoch(
-                val_loader, device, topk=topk)
-            # if self.logger is not None:
-            #     self.logger.info(
-            #         f"Epoch {epoch + 1}||Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
-            total_train_loss += train_loss
-            total_val_loss += val_loss
-            total_val_acc += val_acc
-            # Save the model
-            if save_dir is not None and model_name is not None:
-                self.save_model(save_dir, model_name)
-        _, _, train_k = self._valid_epoch(train_loader, device, topk=topk)
-        progress_bar.close()
-        self.logger.info(
-            f"Train top-{topk}: {train_k}, Valid top-{topk}: {valid_k}")
-        return total_train_loss / self.no_epochs, val_loss, val_acc, max(train_k, valid_k)
+        self.session_ids = self.test_dataset.get_session_labels()
 
     def predict_unsupervised(self,
                              dataset: LogDataset,
@@ -330,60 +227,7 @@ class Trainer:
                 f.write(f"{log}\n\n")
 
         progress_bar.close()
-        normal, anomalies = evaluate_predictions(y_pred)
-        return normal, anomalies
-
-    # not in usage, but cam be implemented
-    # def train_on_false_positive(self,
-    #                             false_positive_dataset: LogDataset,
-    #                             device: str = 'cpu',
-    #                             save_dir: str = None,
-    #                             model_name: str = None,
-    #                             topk: int = 9):
-    #     # NOTE shuffle was true
-    #     train_loader = DataLoader(
-    #         false_positive_dataset, batch_size=self.batch_size, shuffle=False)
-    #     self.model.to(device)
-    #     self.model, train_loader = self.accelerator.prepare(
-    #         self.model, train_loader)
-    #     self.optimizer.zero_grad()
-    #     # Train the model on the false positive anomaly data
-    #     num_training_steps = int(
-    #         self.no_epochs * len(train_loader) / self.accumulation_step)
-    #     num_warmup_steps = int(num_training_steps * self.warmup_rate)
-    #     self.scheduler = get_scheduler(
-    #         self.scheduler_type,
-    #         optimizer=self.optimizer,
-    #         num_warmup_steps=num_warmup_steps,
-    #         num_training_steps=num_training_steps
-    #     )
-    #     progress_bar = tqdm(range(num_training_steps), desc=f"Training",
-    #                         disable=not self.accelerator.is_local_main_process)
-    #     total_train_loss = 0
-
-    #     for epoch in range(self.no_epochs):
-    #         train_loss = self._train_epoch(
-    #             train_loader, device, self.scheduler, progress_bar)
-    #         total_train_loss += train_loss
-    #     if save_dir is not None and model_name is not None:
-    #         self.save_model(save_dir, model_name)
-    #     _, _, train_k = self._valid_epoch(train_loader, device, topk=topk)
-    #     print(
-    #         f"total_train_loss: {total_train_loss / self.no_epochs} top-{topk}: {train_k}")
-    #     return total_train_loss / self.no_epochs, train_k
-
-    def save_model(self, save_dir: str, model_name: str):
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-        self.model = self.accelerator.unwrap_model(self.model)
-        self.accelerator.save(
-            {
-                "lr_scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
-                "optimizer": self.optimizer.state_dict(),
-                "model": self.model.state_dict()
-            },
-            f"{save_dir}/{model_name}.pt"
-        )
+        return evaluate_predictions(y_pred)
 
     def load_model(self, model_path: str):
         checkpoint = torch.load(model_path)
@@ -393,3 +237,20 @@ class Trainer:
         if self.scheduler is not None:
             self.scheduler.load_state_dict(checkpoint['lr_scheduler'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
+
+    def start_predicting(self):
+        self.logger.info(
+            f"Start predicting {self.model_name} model on {self.device} device with top-{self.topk} recommendation")
+        self.load_model(f"{self.args.output_dir}/models/{self.model_name}.pt")
+
+        normal, anomalies = self.predict_unsupervised(dataset=self.test_dataset,
+                                                      topk=self.topk,
+                                                      device=self.device,
+                                                      is_valid=self.is_train,
+                                                      session_ids=self.session_ids,
+                                                      args=self.args,
+                                                      store=self.store,
+                                                      )
+
+        self.logger.info(
+            f"Normal: {normal} - Anomalies: {anomalies}")
