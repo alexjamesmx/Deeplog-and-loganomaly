@@ -28,12 +28,6 @@ def arg_parser():
                         metavar="DIR", help="output directory")
     parser.add_argument("--log_file", default="HDFS.log", help="log file name")
 
-    # experimental settings parameters
-    parser.add_argument("--is_chronological", default=True,
-                        action='store_true', help="if use chronological split")
-    parser.add_argument("--n_class", default=2, type=int,
-                        help="number of classes")
-
     # data process parameters
     parser.add_argument("--grouping", type=str, choices=["sliding", "session"],
                         help="window for building log sequences")
@@ -47,7 +41,7 @@ def arg_parser():
                         type=float, help="valid size")
 
     # model parameters
-    parser.add_argument("--load", default=False, action='store_true')
+    parser.add_argument("--predict", default=False, action='store_true')
     parser.add_argument("--train", default=False, action='store_true')
 
     # training parameters
@@ -151,33 +145,18 @@ def get_optimizer(args, model_parameters):
     return optimizer
 
 
-def evaluate_predictions(predictions: List[int]) -> Tuple[int, int]:
+def evaluate_predictions(unknown, predicted) -> Tuple[int, int]:
     """
     Measure the number of anomalies and normal samples
 
     Args:
-        predictions (List[int])
+        predictions (int): number of predicted anomalies
+        unknown (int): number of unknown samples
 
     Returns:
         Tuple[int, int]: normal, anomalies samples
     """
-    # print(predictions)
-    total_samples = len(predictions)
-    # print(f"evaluate predictions: {predictions} ")
-    # predictions is a list of objects, where each key is the step and the value is the prediction
-    anomalies = 0
-    normal = 0
-    for obj_sequence in predictions:
-        # print(obj_sequence)
-        for step, prediction in obj_sequence.items():
-            if prediction == 1:
-                anomalies += 1
-            else:
-                normal += 1
-
-    print(f"evaluate predictions: {anomalies} ")
-
-    # anomaelies = sum(predictions)
-    # normal = total_samples - anomalies
-
-    return normal, anomalies
+    anomalies = unknown + predicted
+    print(
+        f"anomalies {anomalies} | unknown {unknown} | predicted {predicted} ")
+    return anomalies

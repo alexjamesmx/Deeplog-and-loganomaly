@@ -21,6 +21,8 @@ def sliding_window(df, window_size, step_size, logger: Logger):
     timestamp, severity, events, message, log_uuid,  = df["_zl_timestamp"], df[
         "SEVERITY"], df["EVENTID"],  df["MESSAGE"], df["log_uuid"]
 
+    print(f"first 10 before process {events[:1]}")
+
     # severity_values = df["SEVERITY"].unique()
     # print(f"Severity values: {severity_values}")
     # severity_mapping = {severity: i for i,
@@ -31,15 +33,16 @@ def sliding_window(df, window_size, step_size, logger: Logger):
     print(f"Severity: {severity}")
 
     new_data = []
-    start_end_index_pair = set()
+    start_end_index_pair = []
 
     start_index = 0
     while start_index < log_size:
         end_index = min(start_index + window_size, log_size)
-        start_end_index_pair.add(tuple([start_index, end_index]))
+        start_end_index_pair.append(tuple([start_index, end_index]))
         start_index = start_index + step_size
 
     n_sess = 0
+    # print(f"Start end index pair: {start_end_index_pair[:10]}")
     for (start_index, end_index) in start_end_index_pair:
         new_data.append({
             "SessionId": n_sess,
@@ -56,11 +59,8 @@ def sliding_window(df, window_size, step_size, logger: Logger):
     # print('there are %d instances (sliding windows) in this dataset\n' % len(start_end_index_pair))
     logger.info(f"Number of sessions: {len(new_data)}")
     # logger.info(f"session one {new_data[0]}")
+    # print("proccess new ", new_data[:3])
     return new_data
-
-
-# def session_window(data, window_size: int, logger: Logger):
-
 
 # def time_window(df, window_size: 60, step_size: 60,
 #                 logger: Logger):

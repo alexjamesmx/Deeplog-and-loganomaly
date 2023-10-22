@@ -6,11 +6,25 @@ from logging import Logger, getLogger
 
 
 class Store(object):
-
     def __init__(self,
                  output_dir: str = 'path',
                  logger: Logger = getLogger("__name__")):
+        """
+        This class is meant to store the logs accross the different stages of the pipeline for 
+        debugging purposes, saving original logs, false positives (re-train the model later)
+
+        Args:
+            output_dir (str): output directory to load false positives if exist 
+            logger (Logger)
+        """
         self.output_dir = output_dir
+        if os.path.exists(os.path.join(output_dir, "false_positives.pkl")):
+            data_path = os.path.join(output_dir, "false_positives.pkl")
+            with open(data_path, 'rb') as f:
+                self.false_positives = pickle.load(f)
+                logger.info(f"Loading False positives from: {data_path}\n")
+        else:
+            pass
 
         self.logs = None
         self.lengths = {
@@ -77,15 +91,6 @@ class Store(object):
         self.original_data = []
 
         self.false_positives = []
-
-        if os.path.exists(os.path.join(output_dir, "false_positives.pkl")):
-            data_path = os.path.join(output_dir, "false_positives.pkl")
-            with open(data_path, 'rb') as f:
-                self.false_positives = pickle.load(f)
-                logger.info(f"Loading False positives from: {data_path}\n")
-        else:
-            pass
-            # logger.info(f"False positives not found in: {output_dir}")
 
     def set_lengths(self, train_length=None, valid_length=None, test_length=None):
         if test_length:

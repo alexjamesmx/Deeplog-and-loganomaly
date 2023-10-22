@@ -26,28 +26,30 @@ def build_vocab(vocab_path: str,
     -------
     vocab: Vocab: Vocabulary
     """
+
+    if logger is not None:
+        p = logger.info
+    else:
+        p = print
+
     if not os.path.exists(vocab_path):
-        if logger is not None:
-            logger.info(f"Building vocab from {train_path}")
+        p(f"Building vocab from {train_path}")
         with open(train_path, 'rb') as f:
             data = pickle.load(f)
-        if logger is not None:
-            logger.info(f"Lenght of logs {len(data)}")
         logs = [x["EventId"] for x in data]
         vocab = Vocab(logs, os.path.join(data_dir, embeddings),
                       embedding_dim=embedding_dim)
         vocab.save_vocab(vocab_path)
-        if logger is not None:
-            logger.info(f"Saving vocab in {vocab_path}\n")
+        p(f"Saving vocab in {vocab_path}\n")
     else:
         vocab = Vocab.load_vocab(vocab_path)
-        if logger is not None:
-            logger.info(f"Loading vocab from {vocab_path}")
-    if logger is not None:
-        logger.info(f"Vocab size: {len(vocab)}\n")
+        p(f"Loading vocab from {vocab_path}")
+    p(f"Vocab size: {len(vocab)}\n")
     return vocab
 
 
+# run as python -m utils.vocab
+# know vocab stoi
 if __name__ == "__main__":
     vocab_path = f"output/DeepLog/train0.1/w_size50_s_size50/vocabs/Deeplog.pkl"
     data_dir = f"./dataset"

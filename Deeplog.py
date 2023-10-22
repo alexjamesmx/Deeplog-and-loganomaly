@@ -1,24 +1,60 @@
 import os
 import yaml
-import torch
 import argparse
 import logging
+from torch import nn
 
 from logging import getLogger, Logger
 from accelerate import Accelerator
-from typing import Tuple
 
-from data.vocab import Vocab
 from data.data_loader import process_dataset
-from data.preprocess import preprocess_data, preprocess_slidings
 from data.store import Store
 
-from trainer import Trainer
-# from train import Trainer
-from predict import Predicter
-from utils.helpers import arg_parser, get_optimizer
+from utils.helpers import arg_parser
 from utils.vocab import build_vocab
 from utils.model import build_model
+
+from train import Trainer
+from predict import Predicter
+
+from data.vocab import Vocab
+
+
+def run_train(args: argparse.Namespace,
+              model: nn.Module,
+              vocabs: Vocab,
+              store: Store):
+    """
+    Trains model
+    Args:
+        args (argparse.Namespace): Arguments 
+        store (Store)
+    """
+    args.logger.info("Start training")
+    trainer = Trainer(model,
+                      args,
+                      vocabs,
+                      store)
+    trainer.start_training()
+
+
+def run_predict(args: argparse.Namespace,
+                model: nn.Module,
+                vocabs: Vocab,
+                store: Store):
+    """
+    Predicts a dataset
+    Args:
+        args (argparse.Namespace): Arguments 
+        store (Store)
+    """
+    logger.info("Start predicting")
+    predicter = Predicter(model,
+                          vocabs,
+                          args,
+                          store)
+    predicter.start_predicting()
+
 
 logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
@@ -27,341 +63,6 @@ logging.basicConfig(
 )
 
 accelerator = Accelerator()
-
-
-def run_train(args: argparse.Namespace,
-              store: Store,
-              logger: Logger = getLogger("__name__")):
-    """
-    Preprocess and train model
-
-    Args:
-        args (argparse.Namespace): Arguments 
-        output_dir (str): Output directory
-        store (Store): Class to store original and preprocessed data
-        logger (Logger)
-
-    """
-    logger.info("Start training")
-    train_path, _ = process_dataset(logger=logger,
-                                    output_dir=output_dir,
-                                    args=args)
-    vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
-    vocabs = build_vocab(vocab_path,
-                         args.data_dir,
-                         train_path,
-                         args.embeddings,
-                         args.embedding_dim,
-                         logger)
-
-    model = build_model(args, vocab_size=len(vocabs))
-    # optimizer = get_optimizer(args, model.parameters())
-    device = accelerator.device
-    model = model.to(device)
-
-    setattr(args, "train_path", train_path)
-    setattr(args, "save_dir", f"{output_dir}/models")
-    print(args)
-    trainer = Trainer(
-        model,
-        args,
-        vocabs,
-        store,
-        logger
-    )
-
-    trainer.start_training()
-    # # get train and valid data
-    # train_data, valid_data = preprocess_data(
-    #     path=train_path,
-    #     args=args,
-    #     is_train=True,
-    #     store=store,
-    #     logger=logger)
-    # # turn event_ids sequences into vocab indexes and pad them
-    # # parameters still not implemented
-    # train_dataset, valid_dataset, train_parameters, valid_parameters = preprocess_slidings(
-    #     train_data=train_data,
-    #     valid_data=valid_data,
-    #     vocab=vocabs,
-    #     args=args,
-    #     is_train=True,
-    #     store=store,
-    #     logger=logger,
-    # )
-    # # valid session indexes for recommending topk only (evaluation)
-    # valid_session_idxs = valid_dataset.get_session_labels()
-
-    # train(args,
-    #       train_path,
-    #       test_path,
-    #       vocabs,
-    #       model,
-    #       store,
-    #       output_dir,
-    #       logger,
-    #       accelerator)
-
-
-def train(args: argparse.Namespace,
-          train_path: str,
-          test_path: str,
-          vocab: Vocab,
-          model: torch.nn.Module,
-          store: Store,
-          output_dir: str,
-          logger: Logger = getLogger("__name__"),
-          accelerator: Accelerator = Accelerator()
-          ) -> Tuple[float, float]:
-    """
-    Process data
-    Train model
-
-    Args:
-        args (argparse.Namespace): Arguments
-        train_path (str): Path to training data
-        test_path (str): Path to test data
-        vocab (Vocab): Vocabulary
-        model (torch.nn.Module): Model
-        store (Store): log store 
-        output_dir (str): Output directory
-        logger (Logger, optional) 
-        accelerator (Accelerator) 
-
-    Returns:
-        Tuple[float, float]: Metrics
-    """
-    # get train and valid data
-    train_data, valid_data = preprocess_data(
-        path=train_path,
-        args=args,
-        is_train=True,
-        store=store,
-        logger=logger)
-    # turn event_ids sequences into vocab indexes and pad them
-    # parameters still not implemented
-    train_dataset, valid_dataset, train_parameters, valid_parameters = preprocess_slidings(
-        train_data=train_data,
-        valid_data=valid_data,
-        vocab=vocab,
-        args=args,
-        is_train=True,
-        store=store,
-        logger=logger,
-    )
-    # valid session indexes for recommending topk only (evaluation)
-    valid_session_idxs = valid_dataset.get_session_labels()
-
-    # print("parameters ", train_parameters)
-
-    optimizer = get_optimizer(args, model.parameters())
-
-    device = accelerator.device
-    model = model.to(device)
-    if args.see_config:
-        logger.info(f"Optimizer: {optimizer}")
-        logger.info(model)
-
-    trainer = Trainer(
-        model,
-        train_dataset=train_dataset,
-        valid_dataset=valid_dataset,
-        is_train=True,
-        optimizer=optimizer,
-        no_epochs=args.max_epoch,
-        batch_size=args.batch_size,
-        scheduler_type=args.scheduler,
-        warmup_rate=args.warmup_rate,
-        accumulation_step=args.accumulation_step,
-        logger=logger,
-        accelerator=accelerator,
-        num_classes=len(vocab),
-    )
-
-    logger.info(
-        f"Start training {args.model_name} model on {device} device\n")
-
-    # print("1 train data ", train_dataset[0])
-
-    train_loss, val_loss, val_acc, _ = trainer.train(device=device,
-                                                     save_dir=f"{output_dir}/models",
-                                                     model_name=args.model_name,
-                                                     topk=args.topk)
-    logger.info(
-        f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
-    minimum_recommended_topk = trainer.predict_unsupervised(valid_dataset,
-                                                            valid_session_idxs,
-                                                            topk=args.topk,
-                                                            device=device,
-                                                            is_valid=True)
-    logger.info(
-        f"Top-{args.topk} Min recommendation: {minimum_recommended_topk}\n")
-
-    # Get test data
-    test_data = preprocess_data(
-        path=test_path,
-        args=args,
-        is_train=False,
-        store=store,
-        logger=logger)
-    # print("this is how my data looks ", test_data[0])
-    # turn event_ids sequences into vocab indexes and pad them
-    test_dataset, parameters = preprocess_slidings(
-        test_data=test_data,
-        vocab=vocab,
-        args=args,
-        is_train=False,
-        store=store,
-        logger=logger,
-    )
-    # obtain session indexes
-    session_ids = test_dataset.get_session_labels()
-    print(vocab.stoi)
-
-    # store.lengths
-    # store.get_test_sliding_window(length=True)
-    logger.info(
-        f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
-
-    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
-                                                     #  y_true=[],
-                                                     topk=args.topk,
-                                                     device=device,
-                                                     is_valid=False,
-                                                     #  num_sessions=num_sessions,
-                                                     session_ids=session_ids,
-                                                     args=args,
-                                                     store=store,
-                                                     )
-    logger.info(
-        f"Normal: {normal} - Anomalies: {anomalies}")
-
-
-def run_predict(args: argparse.Namespace,
-                store: Store,
-                logger: Logger = getLogger("__name__")):
-    logger.info("Start predicting :)")
-    _, test_path = process_dataset(logger=logger,
-                                   output_dir=output_dir,
-                                   args=args)
-    vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
-    vocabs = build_vocab(vocab_path,
-                         args.data_dir,
-                         test_path,
-                         args.embeddings,
-                         args.embedding_dim,
-                         logger)
-    model = build_model(args, vocab_size=len(vocabs))
-
-    # optimizer = get_optimizer(args, model.parameters())
-    device = accelerator.device
-    model = model.to(device)
-
-    setattr(args, "test_path", test_path)
-    setattr(args, "save_dir", f"{output_dir}/models")
-
-    predicter = Predicter(
-        model,
-        args,
-        logger=logger,
-        store=store,
-        vocabs=vocabs
-    )
-
-    predicter.start_predicting()
-    # predict(args,
-    #         test_path,
-    #         vocabs,
-    #         model,
-    #         store,
-    #         output_dir,
-    #         logger,
-    #         accelerator)
-
-
-def predict(args: argparse.Namespace,
-            test_path: str,
-            vocab: Vocab,
-            model: torch.nn.Module,
-            store: Store,
-            output_dir: str,
-            logger: Logger = getLogger("__name__"),
-            accelerator: Accelerator = Accelerator()
-            ) -> Tuple[float, float]:
-    """
-    Predict model
-
-    Args:
-        args (argparse.Namespace): Arguments
-        test_path (str): Path to test data
-        vocab (Vocab): Vocabulary
-        model (torch.nn.Module): Model
-        store (Store): log store 
-        output_dir (str): Output directory
-        logger (Logger, optional) 
-        accelerator (Accelerator) 
-
-    Returns:
-        Tuple[float, float]: Metrics
-    """
-    optimizer = get_optimizer(args, model.parameters())
-    device = accelerator.device
-    model = model.to(device)
-    if args.see_config:
-        logger.info(f"Optimizer: {optimizer}")
-        logger.info(model)
-
-    trainer = Trainer(
-        model,
-        is_train=False,
-        optimizer=optimizer,
-        no_epochs=args.max_epoch,
-        batch_size=args.batch_size,
-        scheduler_type=args.scheduler,
-        warmup_rate=args.warmup_rate,
-        accumulation_step=args.accumulation_step,
-        logger=logger,
-        accelerator=accelerator,
-        num_classes=len(vocab),
-    )
-
-    trainer.load_model(f"{output_dir}/models/{args.model_name}.pt")
-
-    test_data = preprocess_data(
-        path=test_path,
-        args=args,
-        is_train=False,
-        store=store,
-        logger=logger)
-
-    test_dataset,  parameteres = preprocess_slidings(
-        test_data=test_data,
-        vocab=vocab,
-        args=args,
-        is_train=False,
-        store=store,
-        logger=logger,
-    )
-    session_ids = test_dataset.get_session_labels()
-    # print(session_ids)
-
-    # # store.lengths
-    # store.get_test_sliding_window()
-    print(vocab.stoi)
-    logger.info(
-        f"Start predicting {args.model_name} model on {device} device with top-{args.topk} recommendation")
-
-    normal, anomalies = trainer.predict_unsupervised(dataset=test_dataset,
-                                                     topk=args.topk,
-                                                     device=device,
-                                                     is_valid=False,
-                                                     session_ids=session_ids,
-                                                     args=args,
-                                                     store=store,
-                                                     )
-    logger.info(
-        f"Normal: {normal} - Anomalies: {anomalies}")
-
 
 if __name__ == "__main__":
     parser = arg_parser()
@@ -380,28 +81,50 @@ if __name__ == "__main__":
             for k, v in config_args.__dict__.items():
                 if v is not None:
                     setattr(args, k, v)
-        logger.info(f"Loaded config from {config_file}!")
+        logger.info(f"Loaded config from {config_file}")
     else:
-        logger.info(f"Loaded config from command line!")
+        logger.info(f"Loaded config from command line")
 
     output_dir = f"{args.output_dir}{args.dataset_folder}/{args.model_name}/train{args.train_size}/h_size{args.window_size}_s_size{args.history_size}/"
     os.makedirs(f"{output_dir}/vocabs", exist_ok=True)
     os.makedirs(args.output_dir, exist_ok=True)
-    setattr(args, "output_dir", output_dir)
-    setattr(args, "device", accelerator.device)
-    setattr(args, "logger", logger)
-    setattr(args, "accelerator", accelerator)
 
     store = Store(output_dir, logger)
 
     logger.info(f"Output directory: {output_dir}")
-    print(args)
-    if args.is_train and not args.is_load:
-        # return 0
-        print("gola")
-        run_train(args, store, logger)
-    elif args.is_load and not args.is_train:
-        run_predict(args, store, logger)
-        # print("load")
+    # obtain .pkl's  paths
+    train_path, test_path = process_dataset(args,
+                                            output_dir=output_dir,
+                                            logger=logger)
+    # set attributes
+    setattr(args, "output_dir", output_dir)
+    setattr(args, "device", accelerator.device)
+    setattr(args, "logger", logger)
+    setattr(args, "accelerator", accelerator)
+    setattr(args, "save_dir", f"{output_dir}/models")
+    setattr(args, "train_path", train_path)
+    setattr(args, "test_path", test_path)
+
+    # load vocab
+    vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
+
+    vocabs = build_vocab(vocab_path,
+                         data_dir=args.data_dir,
+                         train_path=train_path,
+                         embeddings=args.embeddings,
+                         embedding_dim=args.embedding_dim,
+                         logger=logger)
+    model = build_model(args, vocab_size=len(vocabs))
+
+    if args.is_train and not args.is_predict:
+        run_train(args,
+                  model,
+                  vocabs,
+                  store)
+    elif args.is_predict and not args.is_train:
+        run_predict(args,
+                    model,
+                    vocabs,
+                    store)
     else:
         raise ValueError("Either train, load or update must be True")

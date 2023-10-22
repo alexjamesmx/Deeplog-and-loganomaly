@@ -142,9 +142,8 @@ class Trainer:
             # Evaluate the model on the validation set
             val_loss, val_acc, valid_k = self._valid_epoch(
                 val_loader, device, topk=topk)
-            # if self.logger is not None:
-            #     self.logger.info(
-            #         f"Epoch {epoch + 1}||Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
+        #     self.logger.info(
+        #         f"Epoch {epoch + 1}||Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
             total_train_loss += train_loss
             total_val_loss += val_loss
             total_val_acc += val_acc
@@ -218,7 +217,6 @@ class Trainer:
         exact_unkown_anomaly = []
         unknown_dict = {}
         map_unknown_idxs = []
-        # abnormal_sessions = []
         progress_bar = tqdm(total=len(test_loader), desc=f"Predict",
                             disable=not self.accelerator.is_local_main_process)
         for batch in test_loader:
@@ -333,7 +331,7 @@ class Trainer:
         normal, anomalies = evaluate_predictions(y_pred)
         return normal, anomalies
 
-    # not in usage, but cam be implemented
+    # not in usage, but cam be later implemented
     # def train_on_false_positive(self,
     #                             false_positive_dataset: LogDataset,
     #                             device: str = 'cpu',

@@ -1,58 +1,64 @@
-from utils.helpers import get_optimizer
-from data.preprocess import preprocess_data, preprocess_slidings
-from data.dataset import LogDataset
-from typing import List, Tuple, Union
-import argparse
-from data.store import Store
 import torch
 import numpy as np
+import os
+import argparse
+
+from data.process import process_sessions, create_datasets
+from data.dataset import LogDataset
+
+from utils.helpers import get_optimizer
+from utils.helpers import evaluate_predictions
+
+from data.store import Store
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from utils.helpers import evaluate_predictions
+from typing import List, Tuple, Union
 
 
 class Predicter():
 
     def __init__(self,
                  model,
+                 vocabs,
                  args,
-                 logger,
-                 store,
-                 vocabs):
-        self.model = model
+                 store):
+        # constant values
+        self.accelerator = args.accelerator
+        self.device = self.accelerator.device
+        self.model = model.to(self.device)
+        self.optimizer = get_optimizer(args, self.model.parameters())
         self.is_train = False
         self.no_epochs = args.max_epoch
-        self.batch_size = args.batch_size
         self.scheduler_type = args.scheduler
+        self.batch_size = args.batch_size
         self.warmup_rate = args.warmup_rate
         self.accumulation_step = args.accumulation_step
-        self.logger = logger
-        self.accelerator = args.accelerator
-        self.optimizer = get_optimizer(args, self.model.parameters())
+        self.logger = args.logger
         self.num_classes = len(vocabs)
-        self.device = self.accelerator.device
         self.model_name = args.model_name
-        self.topk = args.topk
         self.args = args
+        # dynamic values
+        self.topk = args.topk
         self.store = store
         self.scheduler = None
+        print(vocabs.stoi)
 
-        self.test_sessions = preprocess_data(
+        self.test_sessions = process_sessions(
             path=args.test_path,
             args=args,
             is_train=self.is_train,
             store=store,
-            logger=logger)
+            logger=self.logger)
 
-        self.test_dataset,  self.test_parameters = preprocess_slidings(
+        self.test_dataset,  self.test_parameters = create_datasets(
             test_data=self.test_sessions,
             vocab=vocabs,
             args=args,
             is_train=self.is_train,
             store=store,
-            logger=logger,
+            logger=self.logger,
         )
-        self.session_ids = self.test_dataset.get_session_labels()
+        self.session_ids = self.test_dataset.get_session_ids()
 
     def predict_unsupervised(self,
                              dataset: LogDataset,
@@ -63,25 +69,6 @@ class Predicter():
                              args:  argparse.Namespace = None,
                              store: Store = None
                              ) -> Union[Tuple[float, float, float, float], Tuple[float, int]]:
-        def find_topk(dataloader):
-            y_topk = []
-            torch.set_printoptions(threshold=torch.inf)
-            for batch in dataloader:
-                # Get the label for the current batch.
-                label = self.accelerator.gather(batch['label'])
-                with torch.no_grad():
-                    # here not using topk because we want to find the position of the label in the array
-                    y_prob = self.model.predict(batch, device=device)
-                # get the positions of the probabilities in descending order
-                y_pred = torch.argsort(y_prob, dim=1, descending=True)
-                # Get the positions where the predictions match the label.
-                y_pos = torch.where(y_pred == label.unsqueeze(1))[1] + 1
-                # Add the positions of the labels to the list of top-k values.
-                y_topk.extend(y_pos.cpu().numpy().tolist())
-                # The top-k values for all batches are then added to a list and the 99th percentile of the top-k values is calculated. This value is the top-k value for which the label is in the top-k most likely outcomes.
-                minimum_recommended_topk = int(
-                    np.ceil(np.percentile(y_topk, 0.99)))
-            return minimum_recommended_topk
 
         test_loader = DataLoader(
             dataset, batch_size=self.batch_size, shuffle=False)
@@ -89,16 +76,14 @@ class Predicter():
         self.model, test_loader = self.accelerator.prepare(
             self.model, test_loader)
         self.model.eval()
-        if is_valid:
-            return find_topk(test_loader)
-        else:
-            return self.predict_unsupervised_helper(
-                test_loader=test_loader,
-                topk=topk,
-                session_ids=session_ids,
-                args=args,
-                store=store,
-                device=device)
+
+        return self.predict_unsupervised_helper(
+            test_loader=test_loader,
+            topk=topk,
+            session_ids=session_ids,
+            args=args,
+            store=store,
+            device=device)
 
     def predict_unsupervised_helper(self,
                                     test_loader,
@@ -114,7 +99,10 @@ class Predicter():
         exact_predicted_anomaly = []
         exact_unkown_anomaly = []
         unknown_dict = {}
-        map_unknown_idxs = []
+        list_unknown_idxs = []
+        count_unknown = 0
+        count_predicted = 0
+
         # abnormal_sessions = []
         progress_bar = tqdm(total=len(test_loader), desc=f"Predict",
                             disable=not self.accelerator.is_local_main_process)
@@ -147,71 +135,80 @@ class Predicter():
             # y is a list of lists containing the top-k predicted labels for sequential.
             # batch_label is a list that contains the next event label for each batch.
             # support_label is a list of Boolean values indicating whether each sequence contains an unknown event.
-
             for idx, y_i, b_label, s_label, seq, step in zip(idxs, y, batch_label, support_label, sequential, step):
+                # y_pred will be e.g {0: {sessionId: 0:0, 1: 0, 2: 0, 3: 0, 4: 1}, sessionId+1: {0: 0, 1: 0, 2: 0, 3: 0, 4: 1}, ...}
                 y_pred[idx][step] = 0
-                unk_idxs = np.where(np.array(seq) >= self.num_classes)[0]
+                # if unkown events within current sequence
                 if s_label == 1:
-                    initial_map_length = len(map_unknown_idxs)
+                    # this can be refactored, this code is for writing to a file all unknown events without duplicating logs in a chronological order and taking advantage of this loop
+                    # keep track of changes so sessions where there are several steps with several unknown events, we dont duplicate them.
+                    # E.g
+                    initial_map_length = len(list_unknown_idxs)
+                    # get the indices where the events are unknown from the current sequence
                     unk_idxs = np.where(np.array(seq) >= self.num_classes)[0]
+                    # turn indices to real indices -> step 1 of session [10,20,30,40,50,60,70,80,90,100] with history 5 is [20,30,40,50,60]. if anomaly in [3] = 50 then it is actually the index 5 of the original session
                     unk_idxs = [step + unk_idx for unk_idx in unk_idxs]
-
+                    # create a dictionary with all the session ids where are unknown sequences
                     if session_ids[idx]not in unknown_dict.keys():
                         unknown_dict[session_ids[idx]] = {}
                         unknown_dict[session_ids[idx]][step] = 1
-                        for element in unk_idxs:
-                            map_unknown_idxs.append(element)
+                        # if there are more than 1 unknown event within a sequence, then append to the list of unknown indices
+                        for index in unk_idxs:
+                            list_unknown_idxs.append(index)
+                    # if
                     if step-args.history_size in unknown_dict[session_ids[idx]]:
                         unknown_dict[session_ids[idx]][step] = 1
-                        for element in unk_idxs:
-                            map_unknown_idxs.append(element)
+                        for index in unk_idxs:
+                            list_unknown_idxs.append(index)
                     else:
+                        # if a session id is already contains an unknown event
                         if session_ids[idx] in unknown_dict.keys():
-                            for element in unk_idxs:
+                            for index in unk_idxs:
                                 # if element not in last history size of map unknown idxs
-                                if element not in map_unknown_idxs[-args.history_size:]:
-                                    map_unknown_idxs.append(element)
-
+                                if index not in list_unknown_idxs[-args.history_size:]:
+                                    list_unknown_idxs.append(index)
+                    # obtain original session
                     abnormal_session = store.get_test_data(
                         blockId=session_ids[idx])
-
-                    if len(map_unknown_idxs) > initial_map_length:
-                        # get all elements that are in map_unknown_idxs but not in initial_map without set
-                        size_diff = len(map_unknown_idxs) - initial_map_length
-                        diff_map = map_unknown_idxs[-size_diff:]
-
-                        for unk_idx in diff_map:
+                    # if there were changes
+                    if len(list_unknown_idxs) > initial_map_length:
+                        # get all elements that are different from initial map
+                        delta_size = len(list_unknown_idxs) - \
+                            initial_map_length
+                        # slice where unknown events of a session are not yet in the file
+                        delta_unknown = list_unknown_idxs[-delta_size:]
+                        for index in delta_unknown:
+                            # new unknown
+                            count_unknown += 1
                             exact_predicted_anomaly.append(
                                 {
-                                    # "SessionId": abnormal_session[0]["SessionId"],
-                                    # "real_idx": unk_idx,
-                                    # "step": step,
-                                    "EventId": abnormal_session[0]["EventId"][unk_idx],
-                                    "SEVERITY": abnormal_session[0]["SEVERITY"][unk_idx],
-                                    "MESSAGE": abnormal_session[0]["MESSAGE"][unk_idx],
-                                    "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][unk_idx],
-                                    "log_uuid": abnormal_session[0]["log_uuid"][unk_idx],
+                                    "EventId": abnormal_session[0]["EventId"][index],
+                                    "SEVERITY": abnormal_session[0]["SEVERITY"][index],
+                                    "MESSAGE": abnormal_session[0]["MESSAGE"][index],
+                                    "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][index],
+                                    "log_uuid": abnormal_session[0]["log_uuid"][index],
                                 }
                             )
                 else:
+                    # if the next event is not in the top-k predictions, then current sequence is anomalous
                     y_pred[idx][step] = y_pred[idx][step] | (
                         b_label not in y_i)
-                    if step > 0 and y_pred[idx][step-1] > 0:
+                    # keep track step by step for each log in a w-session. We are one step ahead of the current step, this is because anomalies are labeled in the current step, so we need to check the previous step.
+                    if step >= 1 and y_pred[idx][step-1] >= 1:
+                        # obtain original session
                         abnormal_session = store.get_test_data(
                             blockId=session_ids[idx])
-                        if y_pred[idx][step-1] == 1:
-                            original_anomalies_predicted.append(
-                                abnormal_session)
-                            exact_predicted_anomaly.append(
-                                {
-                                    # "SessionId": abnormal_session[0]["SessionId"],
-                                    "EventId": abnormal_session[0]["EventId"][args.history_size + step],
-                                    "SEVERITY": abnormal_session[0]["SEVERITY"][args.history_size + step],
-                                    "MESSAGE": abnormal_session[0]["MESSAGE"][args.history_size + step],
-                                    "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][args.history_size + step],
-                                    "log_uuid": abnormal_session[0]["log_uuid"][args.history_size + step],
-                                }
-                            )
+                        count_predicted += 1
+                        # get the exact predicted anomaly within the original session
+                        exact_predicted_anomaly.append(
+                            {
+                                "EventId": abnormal_session[0]["EventId"][args.history_size + step - 1],
+                                "SEVERITY": abnormal_session[0]["SEVERITY"][args.history_size + step - 1],
+                                "MESSAGE": abnormal_session[0]["MESSAGE"][args.history_size + step-1],
+                                "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][args.history_size + step-1],
+                                "log_uuid": abnormal_session[0]["log_uuid"][args.history_size + step-1],
+                            }
+                        )
             progress_bar.update(1)
         progress_bar.close()
         idxs = list(y_pred.keys())
@@ -219,15 +216,20 @@ class Predicter():
 
         y_pred = [y_pred[idx] for idx in idxs]
 
-        with open("./testing/predicted_w100_s100_t0.3_topk9_hs_20.txt", "w") as f:
+        test_folder = "./testing/"
+        # remove slashes
+        dataset_folder = self.args.dataset_folder.replace("/", "")
+        filename = f"{dataset_folder}_predicted_w{self.args.window_size}_s{self.args.step_size}train_{self.args.train_size}_topk{self.topk}_his{self.args.history_size}.txt"
+        os.makedirs(test_folder, exist_ok=True)
+        with open(os.path.join(test_folder, filename), 'w') as f:
             for log in exact_predicted_anomaly:
-                f.write(f"{log}\n\n")
-        with open("./testing/unkown.txt", "w") as f:
-            for log in exact_unkown_anomaly:
-                f.write(f"{log}\n\n")
+                f.write(f"{log}\n")
+        # with open("./testing/unkown.txt", "w") as f:
+        #     for log in exact_unkown_anomaly:
+        #         f.write(f"{log}\n\n")
 
         progress_bar.close()
-        return evaluate_predictions(y_pred)
+        return evaluate_predictions(count_unknown, count_predicted)
 
     def load_model(self, model_path: str):
         checkpoint = torch.load(model_path)
@@ -242,15 +244,18 @@ class Predicter():
         self.logger.info(
             f"Start predicting {self.model_name} model on {self.device} device with top-{self.topk} recommendation")
         self.load_model(f"{self.args.output_dir}/models/{self.model_name}.pt")
+        print(f"vocab size: {self.num_classes}")
 
-        normal, anomalies = self.predict_unsupervised(dataset=self.test_dataset,
-                                                      topk=self.topk,
-                                                      device=self.device,
-                                                      is_valid=self.is_train,
-                                                      session_ids=self.session_ids,
-                                                      args=self.args,
-                                                      store=self.store,
-                                                      )
+        if (self.topk > self.num_classes):
+            self.topk = self.num_classes - 10
+            self.logger.info(
+                f"topk is bigger than vocab size, setting topk automatically lower to {self.num_classes}.")
 
-        self.logger.info(
-            f"Normal: {normal} - Anomalies: {anomalies}")
+        self.predict_unsupervised(dataset=self.test_dataset,
+                                  topk=self.topk,
+                                  device=self.device,
+                                  is_valid=self.is_train,
+                                  session_ids=self.session_ids,
+                                  args=self.args,
+                                  store=self.store,
+                                  )

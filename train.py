@@ -1,22 +1,19 @@
 import numpy as np
 import os
 import torch
-import logging
 import argparse
 
 from sklearn.metrics import accuracy_score, top_k_accuracy_score
 from tqdm import tqdm
 from transformers import get_scheduler
 from torch.utils.data import DataLoader
-from typing import Any, Optional, List, Union, Tuple
+from typing import Any,  List, Union, Tuple
 
 from data.store import Store
 from data.dataset import LogDataset
-from utils.helpers import arg_parser, get_optimizer
-from utils.helpers import evaluate_predictions
+from utils.helpers import get_optimizer
 
-from data.data_loader import process_dataset
-from data.preprocess import preprocess_data, preprocess_slidings
+from data.process import process_sessions, create_datasets
 
 
 class Trainer:
@@ -25,45 +22,48 @@ class Trainer:
                  args: argparse.Namespace,
                  vocabs,
                  store,
-                 logger
                  ):
-        self.model = model
+        # constant values
         self.accelerator = args.accelerator
         self.device = self.accelerator.device
-        self.original_anomalies = None
+        self.model = model.to(self.device)
+        self.optimizer = get_optimizer(args, self.model.parameters())
         self.is_train = True
-        self.topk = args.topk
+        self.no_epochs = args.max_epoch
+        self.scheduler_type = args.scheduler
+        self.logger = args.logger
+        self.num_classes = len(vocabs)
         self.save_dir = args.save_dir
         self.model_name = args.model_name
+        self.batch_size = args.batch_size
+        self.warmup_rate = args.warmup_rate
+        self.accumulation_step = args.accumulation_step
+        # dynamic values
+        self.topk = args.topk
+        self.store = store
+        self.scheduler = None
 
-        self.train_sessions, self.valid_sessions = preprocess_data(
+        self.train_sessions, self.valid_sessions = process_sessions(
             path=args.train_path,
             args=args,
             is_train=self.is_train,
             store=store,
-            logger=logger)
+            logger=self.logger)
 
-        self.train_dataset, self.valid_dataset, self.train_parameters, self.valid_parameters = preprocess_slidings(
+        # print(self.train_sessions)
+
+        self.train_dataset, self.valid_dataset, self.train_parameters, self.valid_parameters = create_datasets(
             train_data=self.train_sessions,
             valid_data=self.valid_sessions,
             vocab=vocabs,
             args=args,
             is_train=self.is_train,
             store=store,
-            logger=logger,
+            logger=self.logger,
         )
 
-        self.valid_session_idxs = self.valid_dataset.get_session_labels()
-
-        self.scheduler = None
-        self.optimizer = get_optimizer(args, self.model.parameters())
-        self.no_epochs = args.max_epoch
-        self.batch_size = args.batch_size
-        self.scheduler_type = args.scheduler
-        self.warmup_rate = args.warmup_rate
-        self.accumulation_step = args.accumulation_step
-        self.logger = logger
-        self.num_classes = len(vocabs)
+        self.valid_session_ids = self.valid_dataset.get_session_ids()
+        print(vocabs.stoi)
 
     def _train_epoch(self,
                      train_loader: DataLoader,
@@ -74,7 +74,7 @@ class Trainer:
         self.optimizer.zero_grad()
         total_loss = 0
         for idx, batch in enumerate(train_loader):
-            print(f"batch: {batch}")
+            # print(batch)
 
             outputs = self.model(batch, device=device)
             loss = outputs.loss
@@ -98,7 +98,7 @@ class Trainer:
         y_pred = []
         y_true = []
         losses = []
-        for idx, batch in enumerate(val_loader):
+        for batch in val_loader:
             del batch['idx']
             with torch.no_grad():
                 outputs = self.model(batch, device=device)
@@ -127,7 +127,6 @@ class Trainer:
               save_dir: str = None,
               model_name: str = None,
               topk: int = 9):
-
         train_loader = DataLoader(
             self.train_dataset, batch_size=self.batch_size, shuffle=False)
         val_loader = DataLoader(
@@ -212,145 +211,47 @@ class Trainer:
         self.model, test_loader = self.accelerator.prepare(
             self.model, test_loader)
         self.model.eval()
-        if is_valid:
-            return find_topk(test_loader)
-        else:
-            return self.predict_unsupervised_helper(
-                test_loader=test_loader,
-                topk=topk,
-                session_ids=session_ids,
-                args=args,
-                store=store,
-                device=device)
+        return find_topk(test_loader)
 
-    def predict_unsupervised_helper(self,
-                                    test_loader,
-                                    session_ids: List,
-                                    topk: int,
-                                    args: argparse.Namespace = None,
-                                    store=Store,
-                                    device: str = 'cpu',
-                                    ) -> Tuple[float, float, float, float]:
-        y_pred = {k: {} for k in session_ids}
+    def save_model(self, save_dir: str, model_name: str):
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+        self.model = self.accelerator.unwrap_model(self.model)
+        self.accelerator.save(
+            {
+                "lr_scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
+                "optimizer": self.optimizer.state_dict(),
+                "model": self.model.state_dict()
+            },
+            f"{save_dir}/{model_name}.pt"
+        )
 
-        original_anomalies_predicted = []
-        exact_predicted_anomaly = []
-        exact_unkown_anomaly = []
-        unknown_dict = {}
-        map_unknown_idxs = []
-        # abnormal_sessions = []
-        progress_bar = tqdm(total=len(test_loader), desc=f"Predict",
-                            disable=not self.accelerator.is_local_main_process)
-        for batch in test_loader:
+    def load_model(self, model_path: str):
+        checkpoint = torch.load(model_path)
+        self.model = self.accelerator.unwrap_model(self.model)
+        self.model.load_state_dict(checkpoint['model'])
+        self.model = self.accelerator.prepare(self.model)
+        if self.scheduler is not None:
+            self.scheduler.load_state_dict(checkpoint['lr_scheduler'])
+        self.optimizer.load_state_dict(checkpoint['optimizer'])
 
-            idxs = self.accelerator.gather(
-                batch['idx']).detach().clone().cpu().numpy().tolist()
-            sequential = self.accelerator.gather(
-                batch["sequential"]).detach().clone().cpu().numpy().tolist()
+    def start_training(self):
+        train_loss, val_loss, val_acc, topk = self.train(
+            device=self.device,
+            save_dir=self.save_dir,
+            model_name=self.model_name,
+            topk=self.topk
+        )
+        self.logger.info(
+            f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
+        minimum_recommended_topk = self.predict_unsupervised(self.valid_dataset,
+                                                             self.valid_session_ids,
+                                                             topk=self.topk,
+                                                             device=self.device,
+                                                             is_valid=True)
 
-            step = self.accelerator.gather(
-                batch["step"]).detach().clone().cpu().numpy().tolist()
-
-            support_label = (batch['sequential'] >=
-                             self.num_classes).any(dim=1)
-
-            support_label = self.accelerator.gather(
-                support_label).cpu().numpy().tolist()
-            batch_label = self.accelerator.gather(
-                batch['label']).cpu().numpy().tolist()
-
-            del batch['idx']
-
-            with torch.no_grad():
-                y = self.accelerator.unwrap_model(self.model).predict_class(
-                    batch, top_k=topk, device=device)
-            y = self.accelerator.gather(y).cpu().numpy().tolist()
-
-            # idxs is a list of indices representing sequences
-            # y is a list of lists containing the top-k predicted labels for sequential.
-            # batch_label is a list that contains the next event label for each batch.
-            # support_label is a list of Boolean values indicating whether each sequence contains an unknown event.
-
-            for idx, y_i, b_label, s_label, seq, step in zip(idxs, y, batch_label, support_label, sequential, step):
-                y_pred[idx][step] = 0
-                unk_idxs = np.where(np.array(seq) >= self.num_classes)[0]
-                if s_label == 1:
-                    initial_map_length = len(map_unknown_idxs)
-                    unk_idxs = np.where(np.array(seq) >= self.num_classes)[0]
-                    unk_idxs = [step + unk_idx for unk_idx in unk_idxs]
-
-                    if session_ids[idx]not in unknown_dict.keys():
-                        unknown_dict[session_ids[idx]] = {}
-                        unknown_dict[session_ids[idx]][step] = 1
-                        for element in unk_idxs:
-                            map_unknown_idxs.append(element)
-                    if step-args.history_size in unknown_dict[session_ids[idx]]:
-                        unknown_dict[session_ids[idx]][step] = 1
-                        for element in unk_idxs:
-                            map_unknown_idxs.append(element)
-                    else:
-                        if session_ids[idx] in unknown_dict.keys():
-                            for element in unk_idxs:
-                                # if element not in last history size of map unknown idxs
-                                if element not in map_unknown_idxs[-args.history_size:]:
-                                    map_unknown_idxs.append(element)
-
-                    abnormal_session = store.get_test_data(
-                        blockId=session_ids[idx])
-
-                    if len(map_unknown_idxs) > initial_map_length:
-                        # get all elements that are in map_unknown_idxs but not in initial_map without set
-                        size_diff = len(map_unknown_idxs) - initial_map_length
-                        diff_map = map_unknown_idxs[-size_diff:]
-
-                        for unk_idx in diff_map:
-                            exact_predicted_anomaly.append(
-                                {
-                                    # "SessionId": abnormal_session[0]["SessionId"],
-                                    # "real_idx": unk_idx,
-                                    # "step": step,
-                                    "EventId": abnormal_session[0]["EventId"][unk_idx],
-                                    "SEVERITY": abnormal_session[0]["SEVERITY"][unk_idx],
-                                    "MESSAGE": abnormal_session[0]["MESSAGE"][unk_idx],
-                                    "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][unk_idx],
-                                    "log_uuid": abnormal_session[0]["log_uuid"][unk_idx],
-                                }
-                            )
-                else:
-                    y_pred[idx][step] = y_pred[idx][step] | (
-                        b_label not in y_i)
-                    if step > 0 and y_pred[idx][step-1] > 0:
-                        abnormal_session = store.get_test_data(
-                            blockId=session_ids[idx])
-                        if y_pred[idx][step-1] == 1:
-                            original_anomalies_predicted.append(
-                                abnormal_session)
-                            exact_predicted_anomaly.append(
-                                {
-                                    # "SessionId": abnormal_session[0]["SessionId"],
-                                    "EventId": abnormal_session[0]["EventId"][args.history_size + step],
-                                    "SEVERITY": abnormal_session[0]["SEVERITY"][args.history_size + step],
-                                    "MESSAGE": abnormal_session[0]["MESSAGE"][args.history_size + step],
-                                    "_zl_timestamp": abnormal_session[0]["_zl_timestamp"][args.history_size + step],
-                                    "log_uuid": abnormal_session[0]["log_uuid"][args.history_size + step],
-                                }
-                            )
-            progress_bar.update(1)
-        progress_bar.close()
-        idxs = list(y_pred.keys())
-        self.logger.info(f"Computing metrics...")
-
-        y_pred = [y_pred[idx] for idx in idxs]
-
-        with open("./testing/predicted_w100_s100_t0.3_topk9_hs_20.txt", "w") as f:
-            for log in exact_predicted_anomaly:
-                f.write(f"{log}\n\n")
-        with open("./testing/unkown.txt", "w") as f:
-            for log in exact_unkown_anomaly:
-                f.write(f"{log}\n\n")
-
-        progress_bar.close()
-        return evaluate_predictions(y_pred)
+        self.logger.info(
+            f"Top-{self.topk} Min recommendation: {minimum_recommended_topk}\n")
 
     # not in usage, but cam be implemented
     # def train_on_false_positive(self,
@@ -390,43 +291,3 @@ class Trainer:
     #     print(
     #         f"total_train_loss: {total_train_loss / self.no_epochs} top-{topk}: {train_k}")
     #     return total_train_loss / self.no_epochs, train_k
-
-    def save_model(self, save_dir: str, model_name: str):
-        if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
-        self.model = self.accelerator.unwrap_model(self.model)
-        self.accelerator.save(
-            {
-                "lr_scheduler": self.scheduler.state_dict() if self.scheduler is not None else None,
-                "optimizer": self.optimizer.state_dict(),
-                "model": self.model.state_dict()
-            },
-            f"{save_dir}/{model_name}.pt"
-        )
-
-    def load_model(self, model_path: str):
-        checkpoint = torch.load(model_path)
-        self.model = self.accelerator.unwrap_model(self.model)
-        self.model.load_state_dict(checkpoint['model'])
-        self.model = self.accelerator.prepare(self.model)
-        if self.scheduler is not None:
-            self.scheduler.load_state_dict(checkpoint['lr_scheduler'])
-        self.optimizer.load_state_dict(checkpoint['optimizer'])
-
-    def start_training(self):
-        train_loss, val_loss, val_acc, topk = self.train(
-            device=self.device,
-            save_dir=self.save_dir,
-            model_name=self.model_name,
-            topk=self.topk
-        )
-        self.logger.info(
-            f"Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
-        minimum_recommended_topk = self.predict_unsupervised(self.valid_dataset,
-                                                             self.valid_session_idxs,
-                                                             topk=self.topk,
-                                                             device=self.device,
-                                                             is_valid=True)
-
-        self.logger.info(
-            f"Top-{self.topk} Min recommendation: {minimum_recommended_topk}\n")
