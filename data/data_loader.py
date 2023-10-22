@@ -111,7 +111,7 @@ def raw_logs_tojson(data_dir, num_lines=None):
                     if json_obj.get("EVENTID") is None:
                         # skip if no eventId
                         no_eventId += 1
-                        print(f"Error: {json_obj}")
+                        # print(f"Useless: {json_obj}")
                     else:
                         json_objects.append(json_obj)
                         line_count += 1

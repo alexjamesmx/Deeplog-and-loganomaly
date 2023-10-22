@@ -37,10 +37,12 @@ def process_sessions(path: str,
     logger.info(
         f"{phase_message} data length: {len(data)} (sessions), statistics: {stat} total_train_logs {len(data * args.window_size)}")
     if is_train:
-        # data = data[:3]
+        data = data
         n_valid = int(len(data) * args.valid_ratio)
         train_data, valid_data = data[:-n_valid], data[-n_valid:]
-
+        # testing
+        # data = data[:4]
+        # train_data, valid_data = data[:3], data[-1:]
         store.set_train_data(train_data)
         store.set_valid_data(valid_data)
         store.set_lengths(train_length=len(train_data), valid_length=len(
@@ -50,6 +52,8 @@ def process_sessions(path: str,
         return train_data, valid_data
 
     else:
+        # testing
+        # test_data = data[:4000]
         test_data = data
         store.set_lengths(test_length=len(test_data))
         # num_sessions = [1 for _ in test_data]

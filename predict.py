@@ -95,9 +95,7 @@ class Predicter():
                                     ) -> Tuple[float, float, float, float]:
         y_pred = {k: {} for k in session_ids}
 
-        original_anomalies_predicted = []
         exact_predicted_anomaly = []
-        exact_unkown_anomaly = []
         unknown_dict = {}
         list_unknown_idxs = []
         count_unknown = 0
@@ -138,46 +136,73 @@ class Predicter():
             for idx, y_i, b_label, s_label, seq, step in zip(idxs, y, batch_label, support_label, sequential, step):
                 # y_pred will be e.g {0: {sessionId: 0:0, 1: 0, 2: 0, 3: 0, 4: 1}, sessionId+1: {0: 0, 1: 0, 2: 0, 3: 0, 4: 1}, ...}
                 y_pred[idx][step] = 0
-                # if unkown events within current sequence
+                # if a unkown events within current sequence appears
                 if s_label == 1:
-                    # this can be refactored, this code is for writing to a file all unknown events without duplicating logs in a chronological order and taking advantage of this loop
-                    # keep track of changes so sessions where there are several steps with several unknown events, we dont duplicate them.
-                    # E.g
-                    initial_map_length = len(list_unknown_idxs)
-                    # get the indices where the events are unknown from the current sequence
+                    # Note: this can be refactored, this code is for writing to a file all unknown events without duplicating logs and loops in a chronological order
+                    # this code also finds the exact original logs where unknown events appear
+                    # It keeps track of changes so sessions where there are several steps with several unknown events dont get duplicated.
+
+                    # See "./testing/unknown.txt for better understanding.
+                    # Unknown_dict purpose is to keep track of h sequences at steps where unknown events occur, this way dont duplicate logs. 1 here serves as a pointer of existent unique sequences. so we check real indices as this [[0,1,2,3,4,5,6,7,8,9], [10,11,12,13,14,15,16,17,18,19],[...]] and not check as [1,2,3,4,5,7,8,9,10], [2,3,4,5,6,7,8,9,10,11],[3,4,4,5,6,7,8,9,10,11,12][...]
+                    # this way, as steps reset each h size, see -> if step=1, w=50, h=10, then there are 50 steps. and each 10 steps, the step will be reset to 0. steps will look like: [[0,1,2,3,4,5,6,7,8,9],[0,1,2,3,4,5,6,7,8,9],[...]]
+                    # Unknown_dict E.g {sessionId: {0:1,10:1,20:1,30:1,40:1,}}
+
+                    # initial length is declared in each sequence, whereas list_unkown_idxs keeps track of all the unknown events (indices, not sessions ids) for all sequences
+
+                    initial_length = len(list_unknown_idxs)
+                    # get the indices where the events are unknown within the current sequence
                     unk_idxs = np.where(np.array(seq) >= self.num_classes)[0]
+                    # pseudo = unk_idxs
                     # turn indices to real indices -> step 1 of session [10,20,30,40,50,60,70,80,90,100] with history 5 is [20,30,40,50,60]. if anomaly in [3] = 50 then it is actually the index 5 of the original session
                     unk_idxs = [step + unk_idx for unk_idx in unk_idxs]
+                    # this if is only executed when a unknown event is not in unknown_dict
                     # create a dictionary with all the session ids where are unknown sequences
-                    if session_ids[idx]not in unknown_dict.keys():
+                    # print(f"initial list unknown idxs  : {list_unknown_idxs}")
+
+                    if session_ids[idx] not in unknown_dict.keys():
+                        # {sessionId: {},...,  sesionId: {}, }
                         unknown_dict[session_ids[idx]] = {}
+                        # label current step as abnormal
+                        # if sequence [10,20,30,40,50,60,70,80,90,100]
                         unknown_dict[session_ids[idx]][step] = 1
-                        # if there are more than 1 unknown event within a sequence, then append to the list of unknown indices
+                        # if there are more than 1 unknown events within a sequence, then append to the list of unknown indices
                         for index in unk_idxs:
                             list_unknown_idxs.append(index)
-                    # if
+                    # print(
+                        # f"current sequence at {session_ids[idx]} step {step}: {seq} unknown real indices : {unk_idxs} pseudo indices {pseudo}")
+                    # print(f"unknown dict: {unknown_dict}")
+                    # if a unknown event or several unknown events in a w-session of 50 with history 10 e.g [[0],[...],[10,20,30,40,50,60,70,80,90,100],[...],[w-1]] then we obtain real indices, but each index is a different step, so
+                    # say this sequence [10,20,30,40,50,60,70,80,90,100] is at step 5, real indices must be: [history size + step] = [5,6,7,8,9,10,11,12,13,14].
                     if step-args.history_size in unknown_dict[session_ids[idx]]:
                         unknown_dict[session_ids[idx]][step] = 1
                         for index in unk_idxs:
                             list_unknown_idxs.append(index)
                     else:
-                        # if a session id is already contains an unknown event
+                        # for all unknown events in a history sequence check
+                        # if a session id already contains unknown event/s and add unknown events
+
                         if session_ids[idx] in unknown_dict.keys():
+                            last_history_indices = list_unknown_idxs[-args.history_size:]
                             for index in unk_idxs:
-                                # if element not in last history size of map unknown idxs
-                                if index not in list_unknown_idxs[-args.history_size:]:
+                                # if index not in last history size of list_unknown_idxs
+                                # if index not in list_unknown_idxs[-args.history_size:]:
+                                if index not in last_history_indices:
+
                                     list_unknown_idxs.append(index)
                     # obtain original session
                     abnormal_session = store.get_test_data(
                         blockId=session_ids[idx])
                     # if there were changes
-                    if len(list_unknown_idxs) > initial_map_length:
+                    # print(f"Final list unknown idxs  : {list_unknown_idxs}\n")
+                    if len(list_unknown_idxs) > initial_length:
+                        # print("update")
                         # get all elements that are different from initial map
                         delta_size = len(list_unknown_idxs) - \
-                            initial_map_length
+                            initial_length
                         # slice where unknown events of a session are not yet in the file
                         delta_unknown = list_unknown_idxs[-delta_size:]
                         for index in delta_unknown:
+                            # print(f"new anomaly")
                             # new unknown
                             count_unknown += 1
                             exact_predicted_anomaly.append(
@@ -189,6 +214,8 @@ class Predicter():
                                     "log_uuid": abnormal_session[0]["log_uuid"][index],
                                 }
                             )
+                        # print(f"\n")
+
                 else:
                     # if the next event is not in the top-k predictions, then current sequence is anomalous
                     y_pred[idx][step] = y_pred[idx][step] | (
@@ -216,7 +243,7 @@ class Predicter():
 
         y_pred = [y_pred[idx] for idx in idxs]
 
-        test_folder = "./testing/"
+        test_folder = f"./testing/{self.args.dataset_folder}"
         # remove slashes
         dataset_folder = self.args.dataset_folder.replace("/", "")
         filename = f"{dataset_folder}_predicted_w{self.args.window_size}_s{self.args.step_size}train_{self.args.train_size}_topk{self.topk}_his{self.args.history_size}.txt"
@@ -224,9 +251,6 @@ class Predicter():
         with open(os.path.join(test_folder, filename), 'w') as f:
             for log in exact_predicted_anomaly:
                 f.write(f"{log}\n")
-        # with open("./testing/unkown.txt", "w") as f:
-        #     for log in exact_unkown_anomaly:
-        #         f.write(f"{log}\n\n")
 
         progress_bar.close()
         return evaluate_predictions(count_unknown, count_predicted)
