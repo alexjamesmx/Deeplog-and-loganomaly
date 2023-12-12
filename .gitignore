@@ -1,5 +1,5 @@
-/dataset/**
-/output/**
-/testing/**
+dataset/**
+output/**
+testing/**
 __pycache__/**
 data/__pycache__/**

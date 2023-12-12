@@ -9,14 +9,14 @@ log_file: data
 grouping: sliding
 sequential: true
 semantic: false
-quantitative: false
+quantitative: true
 
 # model configuration
-model_name: DeepLog
+model_name: LogAnomaly
 embedding_dim: 300 # default: 300, can range: from 32 to 1024
 dropout: 0.1 # dropout rate: from 0.0 to 0.5
 hidden_size: 128 # hidden size: from 32 to 1024 default: same as h
-num_layers: 2 # nucd ..mber of layers: from 1 to 8
+num_layers: 2 # number of layers: from 1 to 8
 topk: 9 # default
 history_size: 20
 

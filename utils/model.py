@@ -23,7 +23,7 @@ def build_model(args, vocab_size):
             vocab_size=vocab_size,
             embedding_dim=args.embedding_dim,
             dropout=args.dropout,
-            criterion=torch.nn.CrossEntropyLoss(ignore_index=0)
+            criterion=torch.nn.CrossEntropyLoss(ignore_index=0),
         )
     elif args.model_name == "LogAnomaly":
         model_config = ModelConfig(
@@ -33,7 +33,7 @@ def build_model(args, vocab_size):
             embedding_dim=args.embedding_dim,
             dropout=args.dropout,
             criterion=torch.nn.CrossEntropyLoss(ignore_index=0),
-            use_semantic=args.semantic
+            use_semantic=args.semantic,
         )
     else:
         raise NotImplementedError

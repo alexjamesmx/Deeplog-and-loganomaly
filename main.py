@@ -1,4 +1,4 @@
-import os
+from CONSTATNS import *
 import yaml
 import argparse
 import logging
@@ -7,11 +7,11 @@ from torch import nn
 from logging import getLogger, Logger
 from accelerate import Accelerator
 
-from data.data_loader import process_dataset
+from data.data_loader import process_dataset, df_to_windowed_sessions
 from data.store import Store
 
 from utils.helpers import arg_parser
-from utils.vocab import build_vocab
+from utils.utils import build_vocab
 from utils.model import build_model
 
 from train import Trainer
@@ -20,39 +20,31 @@ from predict import Predicter
 from data.vocab import Vocab
 
 
-def run_train(args: argparse.Namespace,
-              model: nn.Module,
-              vocabs: Vocab,
-              store: Store):
+def run_train(args: argparse.Namespace, model: nn.Module, vocabs: Vocab, store: Store):
     """
     Trains model
     Args:
-        args (argparse.Namespace): Arguments 
+        args (argparse.Namespace)
         store (Store)
     """
     args.logger.info("Start training")
-    trainer = Trainer(model,
-                      args,
-                      vocabs,
-                      store)
+    trainer = Trainer(model, args, vocabs, store)
     trainer.start_training()
 
 
-def run_predict(args: argparse.Namespace,
-                model: nn.Module,
-                vocabs: Vocab,
-                store: Store):
+def run_predict(
+    args: argparse.Namespace, model: nn.Module, vocabs: Vocab, store: Store
+):
     """
     Predicts a dataset
     Args:
-        args (argparse.Namespace): Arguments 
+        args (argparse.Namespace)
+        model (nn.Module)
+        vocabs (Vocab)
         store (Store)
     """
     logger.info("Start predicting")
-    predicter = Predicter(model,
-                          vocabs,
-                          args,
-                          store)
+    predicter = Predicter(model, vocabs, args, store)
     predicter.start_predicting()
 
 
@@ -65,13 +57,15 @@ logging.basicConfig(
 accelerator = Accelerator()
 
 if __name__ == "__main__":
+    # arguments and logger setup
     parser = arg_parser()
     args = parser.parse_args()
 
     logger = getLogger(args.model_name)
     logger.info(accelerator.state)
     logger.setLevel(
-        logging.INFO if accelerator.is_local_main_process else logging.ERROR)
+        logging.INFO if accelerator.is_local_main_process else logging.ERROR
+    )
 
     if args.config_file is not None and os.path.isfile(args.config_file):
         config_file = args.config_file
@@ -85,6 +79,7 @@ if __name__ == "__main__":
     else:
         logger.info(f"Loaded config from command line")
 
+    # set directories
     output_dir = f"{args.output_dir}{args.dataset_folder}/{args.model_name}/train{args.train_size}/h_size{args.window_size}_s_size{args.history_size}/"
     os.makedirs(f"{output_dir}/vocabs", exist_ok=True)
     os.makedirs(args.output_dir, exist_ok=True)
@@ -92,11 +87,9 @@ if __name__ == "__main__":
     store = Store(output_dir, logger)
 
     logger.info(f"Output directory: {output_dir}")
-    # obtain .pkl's  paths
-    train_path, test_path = process_dataset(args,
-                                            output_dir=output_dir,
-                                            logger=logger)
-    # set attributes
+
+    train_path, test_path = process_dataset(args, output_dir, logger)
+
     setattr(args, "output_dir", output_dir)
     setattr(args, "device", accelerator.device)
     setattr(args, "logger", logger)
@@ -105,26 +98,18 @@ if __name__ == "__main__":
     setattr(args, "train_path", train_path)
     setattr(args, "test_path", test_path)
 
-    # load vocab
+    # build or load vocabs and model
     vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
 
-    vocabs = build_vocab(vocab_path,
-                         data_dir=args.data_dir,
-                         train_path=train_path,
-                         embeddings=args.embeddings,
-                         embedding_dim=args.embedding_dim,
-                         logger=logger)
+    vocabs = build_vocab(vocab_path, train_path, args, logger)
+
+    # build model
     model = build_model(args, vocab_size=len(vocabs))
 
+    # run train or predict
     if args.is_train and not args.is_predict:
-        run_train(args,
-                  model,
-                  vocabs,
-                  store)
+        run_train(args, model, vocabs, store)
     elif args.is_predict and not args.is_train:
-        run_predict(args,
-                    model,
-                    vocabs,
-                    store)
+        run_predict(args, model, vocabs, store)
     else:
         raise ValueError("Either train, load or update must be True")

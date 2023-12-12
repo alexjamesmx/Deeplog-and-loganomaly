@@ -5,13 +5,15 @@ from typing import Optional
 
 
 class DeepLog(nn.Module):
-    def __init__(self,
-                 hidden_size: int = 100,
-                 num_layers: int = 2,
-                 vocab_size: int = 100,
-                 embedding_dim: int = 100,
-                 dropout: float = 0.5,
-                 criterion: Optional[nn.Module] = None):
+    def __init__(
+        self,
+        hidden_size: int = 100,
+        num_layers: int = 2,
+        vocab_size: int = 100,
+        embedding_dim: int = 100,
+        dropout: float = 0.5,
+        criterion: Optional[nn.Module] = None,
+    ):
         super(DeepLog, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
@@ -23,20 +25,22 @@ class DeepLog(nn.Module):
         torch.nn.init.zeros_(self.embedding.weight)
         self.embedding.weight.requires_grad = True
 
-        self.lstm = nn.LSTM(input_size=self.embedding_dim,
-                            hidden_size=self.hidden_size,
-                            num_layers=self.num_layers,
-                            batch_first=True,
-                            bidirectional=False,
-                            dropout=dropout)
+        self.lstm = nn.LSTM(
+            input_size=self.embedding_dim,
+            hidden_size=self.hidden_size,
+            num_layers=self.num_layers,
+            batch_first=True,
+            bidirectional=False,
+            dropout=dropout,
+        )
 
         self.fc = nn.Linear(hidden_size, vocab_size)
         self.criterion = criterion
 
-    def forward(self, batch, device='cpu'):
-        x = batch['sequential']
+    def forward(self, batch, device="cpu"):
+        x = batch["sequential"]
         try:
-            y = batch['label']
+            y = batch["label"]
         except KeyError:
             y = None
         x = self.embedding(x.to(device))
@@ -46,7 +50,12 @@ class DeepLog(nn.Module):
         loss = None
         if y is not None and self.criterion is not None:
             loss = self.criterion(logits, y.view(-1).to(device))
-        return ModelOutput(logits=logits, probabilities=probabilities, loss=loss, embeddings=out[:, -1, :])
+        return ModelOutput(
+            logits=logits,
+            probabilities=probabilities,
+            loss=loss,
+            embeddings=out[:, -1, :],
+        )
 
     def save(self, path):
         torch.save(self.state_dict(), path)
@@ -55,23 +64,27 @@ class DeepLog(nn.Module):
         self.load_state_dict(torch.load(path))
 
     def predict(self, src, device="cpu"):
-        del src['label']
+        del src["label"]
         return self.forward(src, device=device).probabilities
 
     def predict_class(self, src, top_k=1, device="cpu"):
-        del src['label']
-        return torch.topk(self.forward(src, device=device).probabilities, k=top_k, dim=1).indices
+        del src["label"]
+        return torch.topk(
+            self.forward(src, device=device).probabilities, k=top_k, dim=1
+        ).indices
 
 
 class LogAnomaly(nn.Module):
-    def __init__(self,
-                 hidden_size: int = 128,
-                 num_layers: int = 2,
-                 vocab_size: int = 100,
-                 embedding_dim: int = 300,
-                 dropout: float = 0.5,
-                 criterion: Optional[nn.Module] = None,
-                 use_semantic: bool = True):
+    def __init__(
+        self,
+        hidden_size: int = 128,
+        num_layers: int = 2,
+        vocab_size: int = 100,
+        embedding_dim: int = 300,
+        dropout: float = 0.5,
+        criterion: Optional[nn.Module] = None,
+        use_semantic: bool = True,
+    ):
         super(LogAnomaly, self).__init__()
         self.hidden_size = hidden_size
         self.num_layers = num_layers
@@ -80,35 +93,38 @@ class LogAnomaly(nn.Module):
         self.use_semantic = use_semantic
         self.embedding = None
         if not self.use_semantic:
-            self.embedding = nn.Embedding(
-                self.vocab_size + 1, self.embedding_dim)
+            self.embedding = nn.Embedding(self.vocab_size + 1, self.embedding_dim)
             torch.nn.init.uniform_(self.embedding.weight)
             self.embedding.weight.requires_grad = True
 
-        self.lstm0 = nn.LSTM(input_size=self.embedding_dim,
-                             hidden_size=hidden_size,
-                             num_layers=num_layers,
-                             batch_first=True,
-                             dropout=dropout,
-                             bidirectional=False)
+        self.lstm0 = nn.LSTM(
+            input_size=self.embedding_dim,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            batch_first=True,
+            dropout=dropout,
+            bidirectional=False,
+        )
 
-        self.lstm1 = nn.LSTM(input_size=1,
-                             hidden_size=hidden_size,
-                             num_layers=num_layers,
-                             batch_first=True,
-                             dropout=dropout,
-                             bidirectional=False)
+        self.lstm1 = nn.LSTM(
+            input_size=1,
+            hidden_size=hidden_size,
+            num_layers=num_layers,
+            batch_first=True,
+            dropout=dropout,
+            bidirectional=False,
+        )
         self.fc = nn.Linear(2 * hidden_size, self.vocab_size)
         self.criterion = criterion
 
-    def forward(self, batch, device='cpu'):
-        x_quant = batch['quantitative'].to(device)
+    def forward(self, batch, device="cpu"):
+        x_quant = batch["quantitative"].to(device)
         if self.use_semantic:
-            x_sem = batch['semantic'].to(device)
+            x_sem = batch["semantic"].to(device)
         else:
-            x_sem = self.embedding(batch['sequential'].to(device))
+            x_sem = self.embedding(batch["sequential"].to(device))
         try:
-            y = batch['label']
+            y = batch["label"]
         except KeyError:
             y = None
         out0, _ = self.lstm0(x_sem)
@@ -121,7 +137,9 @@ class LogAnomaly(nn.Module):
         if y is not None and self.criterion is not None:
             loss = self.criterion(logits, y.view(-1).to(device))
 
-        return ModelOutput(logits=logits, probabilities=probabilities, loss=loss, embeddings=multi_out)
+        return ModelOutput(
+            logits=logits, probabilities=probabilities, loss=loss, embeddings=multi_out
+        )
 
     def save(self, path):
         torch.save(self.state_dict(), path)
@@ -130,9 +148,11 @@ class LogAnomaly(nn.Module):
         self.load_state_dict(torch.load(path))
 
     def predict(self, batch, device="cpu"):
-        del batch['label']
+        del batch["label"]
         return self.forward(batch, device=device).probabilities
 
     def predict_class(self, batch, top_k=1, device="cpu"):
-        del batch['label']
-        return torch.topk(self.forward(batch, device=device).probabilities, k=top_k, dim=1).indices
+        del batch["label"]
+        return torch.topk(
+            self.forward(batch, device=device).probabilities, k=top_k, dim=1
+        ).indices
