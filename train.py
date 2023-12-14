@@ -13,18 +13,47 @@ from data.store import Store
 from data.dataset import LogDataset
 from utils.helpers import get_optimizer
 
-from data.process import process_sessions, create_datasets
+from CONSTANTS import *
+from processing.process import Processor
 
 
 class Trainer:
+    _logger = logging.getLogger("Trainer")
+    _logger.setLevel(logging.DEBUG)
+    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s - %(name)s - " + SESSION + " - %(levelname)s: %(message)s"
+        )
+    )
+
+    file_handler = logging.FileHandler(os.path.join(LOG_ROOT, "Trainer.log"))
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s - %(name)s - " + SESSION + " - %(levelname)s: %(message)s"
+        )
+    )
+
+    _logger.addHandler(console_handler)
+    _logger.addHandler(file_handler)
+    _logger.info(
+        "Construct Trainer logger success, current working directory: %s, logs will be written in %s"
+        % (os.getcwd(), LOG_ROOT)
+    )
+
+    @property
+    def logger(self):
+        return Trainer._logger
+
     def __init__(
         self,
-        model: torch.nn.Module,
-        args: argparse.Namespace,
+        model,
+        args,
         vocabs,
         store,
     ):
-        # constant parameters
         self.accelerator = args.accelerator
         self.device = self.accelerator.device
         self.model = model.to(self.device)
@@ -32,45 +61,48 @@ class Trainer:
         self.is_train = True
         self.no_epochs = args.max_epoch
         self.scheduler_type = args.scheduler
-        self.logger = args.logger
         self.num_classes = len(vocabs)
         self.save_dir = args.save_dir
         self.model_name = args.model_name
         self.batch_size = args.batch_size
         self.warmup_rate = args.warmup_rate
         self.accumulation_step = args.accumulation_step
-        # dynamic parameters
+        self.valid_ratio = args.valid_ratio
+        self.train_path = args.train_path
         self.topk = args.topk
         self.store = store
         self.scheduler = None
 
-        self.train_sessions, self.valid_sessions = process_sessions(
-            path=args.train_path,
-            args=args,
+        processor = Processor()
+
+        self.train_sessions, self.valid_sessions = processor.split_sessions(
+            sessions_path=self.train_path,
+            valid_ratio=self.valid_ratio,
             is_train=self.is_train,
             store=store,
-            logger=self.logger,
         )
-
         (
             self.train_dataset,
             self.valid_dataset,
             self.train_parameters,
             self.valid_parameters,
-        ) = create_datasets(
+        ) = processor.create_datasets(
             train_data=self.train_sessions,
             valid_data=self.valid_sessions,
             vocab=vocabs,
-            args=args,
+            history_size=args.history_size,
+            parameter_model=args.parameter_model,
+            semantic=args.semantic,
+            quantitative=args.quantitative,
+            sequential=args.sequential,
             is_train=self.is_train,
             store=store,
-            logger=self.logger,
         )
 
         self.valid_session_ids = self.valid_dataset.get_session_ids()
 
     def _train_epoch(
-        self, train_loader: DataLoader, device: str, scheduler: Any, progress_bar: Any
+        self, train_loader, device, scheduler: Any, progress_bar: Any
     ) -> float:
         """Trains the model one epoch at a time.
 
@@ -101,9 +133,7 @@ class Trainer:
 
         return total_loss / len(train_loader)
 
-    def _valid_epoch(
-        self, val_loader: DataLoader, device: str, topk: int = 9
-    ) -> Tuple[float, float, float]:
+    def _valid_epoch(self, val_loader, device, topk=9) -> Tuple[float, float, float]:
         """Validates the model.
 
         Args:
@@ -147,13 +177,12 @@ class Trainer:
 
     def train(
         self,
-        device: str = "cpu",
-        save_dir: str = None,
-        model_name: str = "DeepLog",
-        topk: int = 9,
+        device="cpu",
+        save_dir=None,
+        model_name="DeepLog",
+        topk=9,
     ) -> Tuple[float, float, float, float]:
         """Trains the model.
-
         Args:
             device (str): device to train on. Defaults to 'cpu'.
             save_dir (str): directory to save the model. Defaults to None.
@@ -201,7 +230,6 @@ class Trainer:
         total_val_acc = 0
         # Train the model
         for epoch in range(self.no_epochs):
-            # Train the model for one epoch
             train_loss = self._train_epoch(
                 train_loader, device, self.scheduler, progress_bar
             )
@@ -209,8 +237,6 @@ class Trainer:
             val_loss, val_acc, valid_k = self._valid_epoch(
                 val_loader, device, topk=topk
             )
-            # self.logger.info(
-            #     f"Epoch {epoch + 1}||Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f} - Val Acc: {val_acc:.4f}")
             total_train_loss += train_loss
             total_val_loss += val_loss
             total_val_acc += val_acc
@@ -230,7 +256,7 @@ class Trainer:
     def predict_unsupervised(
         self,
         dataset: LogDataset,
-        device: str = "cpu",
+        device="cpu",
     ) -> int:
         """Gets the minimum recommended top-k value.
         Args:
@@ -290,9 +316,8 @@ class Trainer:
         self.optimizer.load_state_dict(checkpoint["optimizer"])
 
     def start_training(self):
-        """
-        Trains the model. Returns the minimum recommended top-k value.
-        """
+        self.logger.info("Start training...")
+
         train_loss, val_loss, val_acc, _ = self.train(
             device=self.device,
             save_dir=self.save_dir,
@@ -309,3 +334,4 @@ class Trainer:
         self.logger.info(
             f"Current top-k: {self.topk} , min recommendation: {minimum_recommended_topk}\n"
         )
+        self.logger.info("Finish training")

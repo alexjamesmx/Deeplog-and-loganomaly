@@ -4,7 +4,6 @@ import os
 import argparse
 
 from datetime import datetime
-from data.process import process_sessions, create_datasets
 from data.dataset import LogDataset
 
 from utils.helpers import get_optimizer
@@ -13,10 +12,41 @@ from utils.helpers import evaluate_predictions
 from data.store import Store
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-from typing import List, Tuple, Union
+from typing import List
+from CONSTANTS import *
+from processing.process import Processor
 
 
 class Predicter:
+    _logger = logging.getLogger("Predicter")
+    _logger.setLevel(logging.DEBUG)
+    console_handler = logging.StreamHandler(sys.stderr)
+    console_handler.setLevel(logging.DEBUG)
+    console_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s - %(name)s - " + SESSION + " - %(levelname)s: %(message)s"
+        )
+    )
+
+    file_handler = logging.FileHandler(os.path.join(LOG_ROOT, "Predicter.log"))
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(
+        logging.Formatter(
+            "%(asctime)s - %(name)s - " + SESSION + " - %(levelname)s: %(message)s"
+        )
+    )
+
+    _logger.addHandler(console_handler)
+    _logger.addHandler(file_handler)
+    _logger.info(
+        "Construct Predicter logger success, current working directory: %s, logs will be written in %s"
+        % (os.getcwd(), LOG_ROOT)
+    )
+
+    @property
+    def logger(self):
+        return Predicter._logger
+
     def __init__(self, model, vocabs, args, store):
         self.accelerator = args.accelerator
         self.device = self.accelerator.device
@@ -28,7 +58,6 @@ class Predicter:
         self.batch_size = args.batch_size
         self.warmup_rate = args.warmup_rate
         self.accumulation_step = args.accumulation_step
-        self.logger = args.logger
         self.num_classes = len(vocabs)
         self.model_name = args.model_name
         self.args = args
@@ -37,17 +66,24 @@ class Predicter:
         self.store = store
         self.scheduler = None
 
-        self.test_sessions = process_sessions(
-            self.path, self.args, self.is_train, self.store, self.logger
-        )
+        processor = Processor()
 
-        self.test_dataset, self.test_parameters = create_datasets(
-            test_data=self.test_sessions,
-            vocab=vocabs,
-            args=self.args,
+        self.test_sessions = processor.split_sessions(
+            sessions_path=self.path,
             is_train=self.is_train,
             store=store,
-            logger=self.logger,
+        )
+
+        self.test_dataset, self.test_parameters = processor.create_datasets(
+            test_data=self.test_sessions,
+            vocab=vocabs,
+            history_size=self.args.history_size,
+            parameter_model=self.args.parameter_model,
+            semantic=self.args.semantic,
+            quantitative=self.args.quantitative,
+            sequential=self.args.sequential,
+            is_train=self.is_train,
+            store=store,
         )
         self.session_ids = self.test_dataset.get_session_ids()
 
@@ -320,7 +356,7 @@ class Predicter:
         if self.topk > self.num_classes:
             self.topk = self.num_classes - 1
             self.logger.info(
-                f"topk is bigger than vocab size, setting topk automatically lower to {self.num_classes}."
+                f"Selected topk is bigger than vocab size, setting topk to automatically be lower than vocab size: {self.num_classes}."
             )
 
         self.predict_unsupervised(

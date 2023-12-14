@@ -1,71 +1,46 @@
-from CONSTATNS import *
+from CONSTANTS import *
 import yaml
 import argparse
 import logging
-from torch import nn
-
-from logging import getLogger, Logger
 from accelerate import Accelerator
-
-from data.data_loader import process_dataset, df_to_windowed_sessions
 from data.store import Store
-
 from utils.helpers import arg_parser
 from utils.utils import build_vocab
 from utils.model import build_model
-
 from train import Trainer
 from predict import Predicter
-
+from preprocessing.preprocess import Preprocessor
 from data.vocab import Vocab
 
-
-def run_train(args: argparse.Namespace, model: nn.Module, vocabs: Vocab, store: Store):
-    """
-    Trains model
-    Args:
-        args (argparse.Namespace)
-        store (Store)
-    """
-    args.logger.info("Start training")
-    trainer = Trainer(model, args, vocabs, store)
-    trainer.start_training()
-
-
-def run_predict(
-    args: argparse.Namespace, model: nn.Module, vocabs: Vocab, store: Store
-):
-    """
-    Predicts a dataset
-    Args:
-        args (argparse.Namespace)
-        model (nn.Module)
-        vocabs (Vocab)
-        store (Store)
-    """
-    logger.info("Start predicting")
-    predicter = Predicter(model, vocabs, args, store)
-    predicter.start_predicting()
-
-
-logging.basicConfig(
-    format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
-    datefmt="%m/%d/%Y %H:%M:%S",
-    level=logging.INFO,
+_logger = logging.getLogger("Main")
+_logger.setLevel(logging.DEBUG)
+console_handler = logging.StreamHandler(sys.stderr)
+console_handler.setLevel(logging.DEBUG)
+console_handler.setFormatter(
+    logging.Formatter(
+        "%(asctime)s - %(name)s - " + SESSION + " - %(levelname)s: %(message)s"
+    )
 )
 
+file_handler = logging.FileHandler(os.path.join(LOG_ROOT, "Main.log"))
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(
+    logging.Formatter(
+        "%(asctime)s - %(name)s - " + SESSION + " - %(levelname)s: %(message)s"
+    )
+)
+
+_logger.addHandler(console_handler)
+_logger.addHandler(file_handler)
+_logger.info(
+    "Construct Main logger success, current working directory: %s, logs will be written in %s"
+    % (os.getcwd(), LOG_ROOT)
+)
 accelerator = Accelerator()
 
 if __name__ == "__main__":
-    # arguments and logger setup
     parser = arg_parser()
     args = parser.parse_args()
-
-    logger = getLogger(args.model_name)
-    logger.info(accelerator.state)
-    logger.setLevel(
-        logging.INFO if accelerator.is_local_main_process else logging.ERROR
-    )
 
     if args.config_file is not None and os.path.isfile(args.config_file):
         config_file = args.config_file
@@ -75,41 +50,55 @@ if __name__ == "__main__":
             for k, v in config_args.__dict__.items():
                 if v is not None:
                     setattr(args, k, v)
-        logger.info(f"Loaded config from {config_file}")
+        print("\nLoaded config from %s\n" % config_file)
     else:
-        logger.info(f"Loaded config from command line")
+        print(f"\nLoaded config from command line\n")
 
-    # set directories
-    output_dir = f"{args.output_dir}{args.dataset_folder}/{args.model_name}/train{args.train_size}/h_size{args.window_size}_s_size{args.history_size}/"
-    os.makedirs(f"{output_dir}/vocabs", exist_ok=True)
+    _logger.info(accelerator.state)
+
+    OUTPUT_DIRECTORY = f"{args.output_dir}{args.dataset_folder}/{args.model_name}/train{args.train_size}/h_size{args.window_size}_s_size{args.history_size}/"
+
     os.makedirs(args.output_dir, exist_ok=True)
+    os.makedirs(f"{OUTPUT_DIRECTORY}/vocabs", exist_ok=True)
 
-    store = Store(output_dir, logger)
+    store = Store(OUTPUT_DIRECTORY, _logger)
 
-    logger.info(f"Output directory: {output_dir}")
+    _logger.info("Output directory: %s" % OUTPUT_DIRECTORY)
 
-    train_path, test_path = process_dataset(args, output_dir, logger)
+    preprocessor = Preprocessor(args)
+    train_path, test_path = preprocessor.process_dataset(OUTPUT_DIRECTORY)
 
-    setattr(args, "output_dir", output_dir)
+    setattr(args, "output_dir", OUTPUT_DIRECTORY)
     setattr(args, "device", accelerator.device)
-    setattr(args, "logger", logger)
     setattr(args, "accelerator", accelerator)
-    setattr(args, "save_dir", f"{output_dir}/models")
+    setattr(args, "save_dir", f"{OUTPUT_DIRECTORY}/models")
     setattr(args, "train_path", train_path)
     setattr(args, "test_path", test_path)
 
-    # build or load vocabs and model
-    vocab_path = f"{output_dir}vocabs/{args.model_name}.pkl"
+    vocab_path = f"{OUTPUT_DIRECTORY}vocabs/{args.model_name}.pkl"
 
-    vocabs = build_vocab(vocab_path, train_path, args, logger)
+    vocab = Vocab()
+    exists = vocab.check_already_exists(vocab_path)
+    if exists:
+        vocab = Vocab.load_vocab(vocab_path)
+    else:
+        vocab.build_vocab(
+            vocab_path,
+            train_path,
+            embeddings_path=os.path.join(args.data_dir, args.embeddings),
+            embedding_dim=args.embedding_dim,
+            model_name=args.model_name,
+        )
+    _logger.info("length of vocabs: %d" % len(vocab))
 
-    # build model
-    model = build_model(args, vocab_size=len(vocabs))
+    model = build_model(args, vocab_size=len(vocab))
 
-    # run train or predict
     if args.is_train and not args.is_predict:
-        run_train(args, model, vocabs, store)
+        trainer = Trainer(model, args, vocab, store)
+        trainer.start_training()
+
     elif args.is_predict and not args.is_train:
-        run_predict(args, model, vocabs, store)
+        predicter = Predicter(model, vocab, args, store)
+        predicter.start_predicting()
     else:
         raise ValueError("Either train, load or update must be True")

@@ -1,0 +1,93 @@
+2023-12-12 15:42:59,414 - Vocab - SESSION_a1129818 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:45:25,269 - Vocab - SESSION_a0b98ce5 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:45:26,805 - Vocab - SESSION_a0b98ce5 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:45:26,806 - Vocab - SESSION_a0b98ce5 - INFO: Vocab size: 30
+
+2023-12-12 15:46:44,856 - Vocab - SESSION_9a12595b - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:46:46,270 - Vocab - SESSION_9a12595b - INFO: Building vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/train.pkl
+2023-12-12 15:47:17,168 - Vocab - SESSION_2f5c52cf - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:47:18,721 - Vocab - SESSION_2f5c52cf - INFO: Building vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/train.pkl
+2023-12-12 15:47:18,737 - Vocab - SESSION_2f5c52cf - INFO: Saving vocab in ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+
+2023-12-12 15:47:38,040 - Vocab - SESSION_5a4ece02 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:47:39,571 - Vocab - SESSION_5a4ece02 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:47:39,571 - Vocab - SESSION_5a4ece02 - INFO: Vocab size: 29
+
+2023-12-12 15:47:59,528 - Vocab - SESSION_a0abd57d - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:48:01,051 - Vocab - SESSION_a0abd57d - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:48:01,051 - Vocab - SESSION_a0abd57d - INFO: Vocab size: 29
+
+2023-12-12 15:49:06,791 - Vocab - SESSION_06bc5475 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:49:38,824 - Vocab - SESSION_2054f841 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:49:40,319 - Vocab - SESSION_2054f841 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:49:40,319 - Vocab - SESSION_2054f841 - INFO: Vocab size: 29
+
+2023-12-12 15:50:05,425 - Vocab - SESSION_be3728b8 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:50:07,375 - Vocab - SESSION_be3728b8 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:50:07,375 - Vocab - SESSION_be3728b8 - INFO: Vocab size: 29
+
+2023-12-12 15:50:23,982 - Vocab - SESSION_f847a176 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:50:25,487 - Vocab - SESSION_f847a176 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:50:25,487 - Vocab - SESSION_f847a176 - INFO: Vocab size: 29
+
+2023-12-12 15:52:33,730 - Vocab - SESSION_09ce003f - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:52:35,274 - Vocab - SESSION_09ce003f - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:52:35,274 - Vocab - SESSION_09ce003f - INFO: Vocab size: 0
+
+2023-12-12 15:53:02,874 - Vocab - SESSION_670586c1 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:53:04,406 - Vocab - SESSION_670586c1 - INFO: Building vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/train.pkl
+2023-12-12 15:53:04,424 - Vocab - SESSION_670586c1 - INFO: Saving vocab in ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+
+2023-12-12 15:53:04,425 - Vocab - SESSION_670586c1 - INFO: Vocab size: 29
+
+2023-12-12 15:54:00,272 - Vocab - SESSION_2510811a - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:54:01,761 - Vocab - SESSION_2510811a - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:54:01,761 - Vocab - SESSION_2510811a - INFO: Vocab size: 0
+
+2023-12-12 15:54:23,839 - Vocab - SESSION_7a6b32e1 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:54:25,229 - Vocab - SESSION_7a6b32e1 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:54:25,229 - Vocab - SESSION_7a6b32e1 - INFO: Vocab size: 0
+
+2023-12-12 15:56:08,538 - Vocab - SESSION_01e54329 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:56:09,973 - Vocab - SESSION_01e54329 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:56:09,973 - Vocab - SESSION_01e54329 - INFO: Vocab size: 1
+
+2023-12-12 15:57:35,783 - Vocab - SESSION_ec101b8c - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:57:37,288 - Vocab - SESSION_ec101b8c - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:57:37,288 - Vocab - SESSION_ec101b8c - INFO: Vocab size: 0
+
+2023-12-12 15:58:01,785 - Vocab - SESSION_18d091ce - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:58:03,264 - Vocab - SESSION_18d091ce - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 15:58:03,264 - Vocab - SESSION_18d091ce - INFO: Vocab size: 0
+
+2023-12-12 15:58:38,551 - Vocab - SESSION_b42017d5 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:58:40,022 - Vocab - SESSION_b42017d5 - INFO: Building vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/train.pkl
+2023-12-12 15:58:40,038 - Vocab - SESSION_b42017d5 - INFO: Saving vocab in ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+
+2023-12-12 15:58:40,038 - Vocab - SESSION_b42017d5 - INFO: Vocab size: 29
+
+2023-12-12 15:59:21,345 - Vocab - SESSION_be4ac986 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:59:22,835 - Vocab - SESSION_be4ac986 - INFO: Building vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/train.pkl
+2023-12-12 15:59:22,851 - Vocab - SESSION_be4ac986 - INFO: Saving vocab in ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+
+2023-12-12 15:59:22,851 - Vocab - SESSION_be4ac986 - INFO: Vocab size: 30
+
+2023-12-12 16:03:42,157 - Vocab - SESSION_b57bc4d1 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 12:36:11,341 - Vocab - SESSION_c6614388 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 14:01:56,452 - Vocab - SESSION_4408727d - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 14:02:05,794 - Vocab - SESSION_4408727d - INFO: Building vocab from ./output//oct2-3//DeepLog/train0.4/h_size100_s_size20/train.pkl
+2023-12-13 14:02:05,859 - Vocab - SESSION_4408727d - INFO: Saving vocab in ./output//oct2-3//DeepLog/train0.4/h_size100_s_size20/vocabs/DeepLog.pkl
+
+2023-12-13 14:02:05,859 - Vocab - SESSION_4408727d - INFO: Vocab size: 59
+
+2023-12-13 14:02:20,223 - Vocab - SESSION_ff73b39f - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 14:02:57,786 - Vocab - SESSION_ff73b39f - INFO: Building vocab from ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/train.pkl
+2023-12-13 14:02:59,208 - Vocab - SESSION_ff73b39f - INFO: Saving vocab in ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/vocabs/DeepLog.pkl
+
+2023-12-13 14:02:59,208 - Vocab - SESSION_ff73b39f - INFO: Vocab size: 59
+
+2023-12-13 15:16:35,242 - Vocab - SESSION_f19e9b06 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:20:54,275 - Vocab - SESSION_06c3899f - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:21:35,388 - Vocab - SESSION_7ab3e392 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:21:56,911 - Vocab - SESSION_ee262169 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:30:05,664 - Vocab - SESSION_a734f4b8 - INFO: Construct Vocab logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs

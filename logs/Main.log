@@ -1,0 +1,395 @@
+2023-12-12 13:17:32,948 - main - SESSION_a815af9d - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:17:32,956 - main - SESSION_a815af9d - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 13:17:32,956 - main - SESSION_a815af9d - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 13:17:32,956 - main - SESSION_a815af9d - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 13:17:32,956 - main - SESSION_a815af9d - INFO: Vocab size: 30
+
+2023-12-12 13:18:02,325 - Main - SESSION_5928a37b - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:18:02,332 - Main - SESSION_5928a37b - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 13:18:02,333 - Main - SESSION_5928a37b - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 13:18:02,333 - Main - SESSION_5928a37b - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 13:18:02,333 - Main - SESSION_5928a37b - INFO: Vocab size: 30
+
+2023-12-12 13:29:07,646 - Main - SESSION_52a494af - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:29:07,652 - Main - SESSION_52a494af - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 13:29:07,652 - Main - SESSION_52a494af - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 13:29:07,652 - Main - SESSION_52a494af - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 13:29:07,652 - Main - SESSION_52a494af - INFO: Vocab size: 30
+
+2023-12-12 13:53:10,225 - Main - SESSION_61cba5a2 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:53:10,237 - Main - SESSION_61cba5a2 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 13:53:10,237 - Main - SESSION_61cba5a2 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 13:53:10,238 - Main - SESSION_61cba5a2 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 13:53:10,238 - Main - SESSION_61cba5a2 - INFO: Vocab size: 30
+
+2023-12-12 13:53:35,111 - Main - SESSION_3959c71c - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:53:35,120 - Main - SESSION_3959c71c - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 13:53:35,120 - Main - SESSION_3959c71c - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 13:53:35,121 - Main - SESSION_3959c71c - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 13:53:35,121 - Main - SESSION_3959c71c - INFO: Vocab size: 30
+
+2023-12-12 14:11:10,569 - Main - SESSION_ef7b3173 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:11:10,583 - Main - SESSION_ef7b3173 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 14:11:10,584 - Main - SESSION_ef7b3173 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 14:11:10,584 - Main - SESSION_ef7b3173 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 14:11:10,585 - Main - SESSION_ef7b3173 - INFO: Vocab size: 30
+
+2023-12-12 14:11:21,899 - Main - SESSION_d63df065 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:11:21,909 - Main - SESSION_d63df065 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 14:11:21,909 - Main - SESSION_d63df065 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 14:11:21,910 - Main - SESSION_d63df065 - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 14:11:21,910 - Main - SESSION_d63df065 - INFO: Vocab size: 30
+
+2023-12-12 14:12:51,914 - Main - SESSION_92b3b84b - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:12:51,925 - Main - SESSION_92b3b84b - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 14:12:51,926 - Main - SESSION_92b3b84b - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 14:12:51,926 - Main - SESSION_92b3b84b - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 14:12:51,926 - Main - SESSION_92b3b84b - INFO: Vocab size: 30
+
+2023-12-12 15:28:11,564 - Main - SESSION_8a4f6270 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:28:11,574 - Main - SESSION_8a4f6270 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:28:11,575 - Main - SESSION_8a4f6270 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:43:05,544 - Main - SESSION_a1129818 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:43:05,551 - Main - SESSION_a1129818 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:43:05,551 - Main - SESSION_a1129818 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:45:26,785 - Main - SESSION_a0b98ce5 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:45:26,795 - Main - SESSION_a0b98ce5 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:45:26,796 - Main - SESSION_a0b98ce5 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:46:46,252 - Main - SESSION_9a12595b - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:46:46,269 - Main - SESSION_9a12595b - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:46:46,270 - Main - SESSION_9a12595b - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:47:18,711 - Main - SESSION_2f5c52cf - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:47:18,720 - Main - SESSION_2f5c52cf - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:47:18,721 - Main - SESSION_2f5c52cf - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:47:39,560 - Main - SESSION_5a4ece02 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:47:39,568 - Main - SESSION_5a4ece02 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:47:39,569 - Main - SESSION_5a4ece02 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:48:01,038 - Main - SESSION_a0abd57d - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:48:01,049 - Main - SESSION_a0abd57d - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:48:01,049 - Main - SESSION_a0abd57d - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:49:08,178 - Main - SESSION_06bc5475 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:49:08,187 - Main - SESSION_06bc5475 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:49:08,187 - Main - SESSION_06bc5475 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:49:40,307 - Main - SESSION_2054f841 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:49:40,317 - Main - SESSION_2054f841 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:49:40,318 - Main - SESSION_2054f841 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:50:07,361 - Main - SESSION_be3728b8 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:50:07,373 - Main - SESSION_be3728b8 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:50:07,374 - Main - SESSION_be3728b8 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:50:25,478 - Main - SESSION_f847a176 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:50:25,486 - Main - SESSION_f847a176 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:50:25,486 - Main - SESSION_f847a176 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:52:35,263 - Main - SESSION_09ce003f - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:52:35,272 - Main - SESSION_09ce003f - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:52:35,272 - Main - SESSION_09ce003f - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:53:04,395 - Main - SESSION_670586c1 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:53:04,405 - Main - SESSION_670586c1 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:53:04,406 - Main - SESSION_670586c1 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:54:01,750 - Main - SESSION_2510811a - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:54:01,759 - Main - SESSION_2510811a - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:54:01,759 - Main - SESSION_2510811a - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:54:25,219 - Main - SESSION_7a6b32e1 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:54:25,227 - Main - SESSION_7a6b32e1 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:54:25,228 - Main - SESSION_7a6b32e1 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:56:09,963 - Main - SESSION_01e54329 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:56:09,971 - Main - SESSION_01e54329 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:56:09,971 - Main - SESSION_01e54329 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:57:37,275 - Main - SESSION_ec101b8c - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:57:37,286 - Main - SESSION_ec101b8c - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:57:37,286 - Main - SESSION_ec101b8c - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:58:03,253 - Main - SESSION_18d091ce - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:58:03,262 - Main - SESSION_18d091ce - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:58:03,262 - Main - SESSION_18d091ce - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:58:40,012 - Main - SESSION_b42017d5 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:58:40,022 - Main - SESSION_b42017d5 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:58:40,022 - Main - SESSION_b42017d5 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 15:59:22,826 - Main - SESSION_be4ac986 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:59:22,834 - Main - SESSION_be4ac986 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 15:59:22,835 - Main - SESSION_be4ac986 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 16:03:43,642 - Main - SESSION_b57bc4d1 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 16:03:43,651 - Main - SESSION_b57bc4d1 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 16:03:43,652 - Main - SESSION_b57bc4d1 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-13 12:36:18,683 - Main - SESSION_c6614388 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 12:36:18,694 - Main - SESSION_c6614388 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 12:36:18,694 - Main - SESSION_c6614388 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-13 14:01:58,394 - Main - SESSION_4408727d - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 14:01:58,406 - Main - SESSION_4408727d - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 14:01:58,407 - Main - SESSION_4408727d - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size20/
+2023-12-13 14:02:21,728 - Main - SESSION_ff73b39f - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 14:02:21,737 - Main - SESSION_ff73b39f - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 14:02:21,737 - Main - SESSION_ff73b39f - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-13 15:16:37,770 - Main - SESSION_f19e9b06 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:16:37,773 - Main - SESSION_f19e9b06 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 15:16:37,773 - Main - SESSION_f19e9b06 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-13 15:20:56,186 - Main - SESSION_06c3899f - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:20:56,189 - Main - SESSION_06c3899f - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 15:20:56,189 - Main - SESSION_06c3899f - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-13 15:21:35,984 - Main - SESSION_7ab3e392 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:21:35,989 - Main - SESSION_7ab3e392 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 15:21:35,989 - Main - SESSION_7ab3e392 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-13 15:21:57,558 - Main - SESSION_ee262169 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:21:57,561 - Main - SESSION_ee262169 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 15:21:57,561 - Main - SESSION_ee262169 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-13 15:30:06,343 - Main - SESSION_a734f4b8 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:30:06,347 - Main - SESSION_a734f4b8 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-13 15:30:06,347 - Main - SESSION_a734f4b8 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-13 15:30:06,531 - Main - SESSION_a734f4b8 - INFO: length of vocabs: 59

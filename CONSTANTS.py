@@ -5,6 +5,13 @@ import numpy as np
 import hashlib
 import time
 import random
+import sys
+import logging
+import argparse
+from logging import getLogger, Logger
+from typing import List, Tuple, Dict
+import pickle
+from collections import Counter
 
 
 print("Seeding everything...")
@@ -18,10 +25,9 @@ torch.backends.cudnn.benchmark = False
 torch.backends.cudnn.deterministic = True
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 os.environ["PYTHONHASHSEED"] = str(seed)
+print("Seeding Finished\n")
 
-print("Seeding Finished")
 
-# Device configuration
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 SESSION = hashlib.md5(
@@ -31,6 +37,6 @@ SESSION = hashlib.md5(
 ).hexdigest()[:8]
 SESSION = "SESSION_" + SESSION
 
-current_abspath = os.path.abspath(__file__)
-PROJECT_ROOT = os.path.dirname(os.path.dirname(current_abspath))
+current_path = os.path.abspath(__file__)
+PROJECT_ROOT = os.path.split(current_path)[0]
 LOG_ROOT = os.path.join(PROJECT_ROOT, "logs")

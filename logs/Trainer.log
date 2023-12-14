@@ -1,0 +1,146 @@
+2023-12-12 13:05:46,880 - Trainer - SESSION_5e21cdc6 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:09:30,432 - Trainer - SESSION_2cb2ed0d - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:09:31,194 - Trainer - SESSION_2cb2ed0d - INFO: Train data length: 100 (sessions), statistics: {'min': 100, 'max': 100, 'mean': 100.0} total_train_logs 10000
+2023-12-12 13:09:31,195 - Trainer - SESSION_2cb2ed0d - INFO: Size of train data: 90. Size of valid data: 10
+2023-12-12 13:09:31,262 - Trainer - SESSION_2cb2ed0d - INFO: Number of sequences: 7200
+2023-12-12 13:09:31,271 - Trainer - SESSION_2cb2ed0d - INFO: Number of sequences: 800
+2023-12-12 13:09:31,272 - Trainer - SESSION_2cb2ed0d - INFO: Start training...
+2023-12-12 13:10:08,133 - Trainer - SESSION_2cb2ed0d - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 13:10:08,133 - Trainer - SESSION_2cb2ed0d - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 13:10:08,251 - Trainer - SESSION_2cb2ed0d - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 13:13:11,348 - Trainer - SESSION_082386ab - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:13:11,954 - Trainer - SESSION_082386ab - INFO: Train data length: 100 (sessions), statistics: {'min': 100, 'max': 100, 'mean': 100.0} total_train_logs 10000
+2023-12-12 13:13:11,956 - Trainer - SESSION_082386ab - INFO: Size of train data: 90. Size of valid data: 10
+2023-12-12 13:13:12,007 - Trainer - SESSION_082386ab - INFO: Number of sequences: 7200
+2023-12-12 13:13:12,014 - Trainer - SESSION_082386ab - INFO: Number of sequences: 800
+2023-12-12 13:13:12,014 - Trainer - SESSION_082386ab - INFO: Start training...
+2023-12-12 13:13:44,713 - Trainer - SESSION_082386ab - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 13:13:44,714 - Trainer - SESSION_082386ab - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 13:13:44,942 - Trainer - SESSION_082386ab - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 13:15:48,082 - Trainer - SESSION_ccfdc59b - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:16:07,892 - Trainer - SESSION_ba37c4cf - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:16:08,566 - Trainer - SESSION_ba37c4cf - INFO: Train data length: 100 (sessions), statistics: {'min': 100, 'max': 100, 'mean': 100.0} total_train_logs 10000
+2023-12-12 13:16:08,566 - Trainer - SESSION_ba37c4cf - INFO: Size of train data: 90. Size of valid data: 10
+2023-12-12 13:16:08,617 - Trainer - SESSION_ba37c4cf - INFO: Number of sequences: 7200
+2023-12-12 13:16:08,624 - Trainer - SESSION_ba37c4cf - INFO: Number of sequences: 800
+2023-12-12 13:16:08,624 - Trainer - SESSION_ba37c4cf - INFO: Start training...
+2023-12-12 13:16:43,110 - Trainer - SESSION_ba37c4cf - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 13:16:43,110 - Trainer - SESSION_ba37c4cf - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 13:16:43,206 - Trainer - SESSION_ba37c4cf - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 13:17:31,708 - Trainer - SESSION_a815af9d - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:17:32,975 - Trainer - SESSION_a815af9d - INFO: Train data length: 100 (sessions), statistics: {'min': 100, 'max': 100, 'mean': 100.0} total_train_logs 10000
+2023-12-12 13:17:32,976 - Trainer - SESSION_a815af9d - INFO: Size of train data: 90. Size of valid data: 10
+2023-12-12 13:17:33,031 - Trainer - SESSION_a815af9d - INFO: Number of sequences: 7200
+2023-12-12 13:17:33,038 - Trainer - SESSION_a815af9d - INFO: Number of sequences: 800
+2023-12-12 13:17:33,038 - Trainer - SESSION_a815af9d - INFO: Start training...
+2023-12-12 13:18:01,759 - Trainer - SESSION_5928a37b - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:18:02,352 - Trainer - SESSION_5928a37b - INFO: Train data length: 100 (sessions), statistics: {'min': 100, 'max': 100, 'mean': 100.0} total_train_logs 10000
+2023-12-12 13:18:02,353 - Trainer - SESSION_5928a37b - INFO: Size of train data: 90. Size of valid data: 10
+2023-12-12 13:18:02,405 - Trainer - SESSION_5928a37b - INFO: Number of sequences: 7200
+2023-12-12 13:18:02,412 - Trainer - SESSION_5928a37b - INFO: Number of sequences: 800
+2023-12-12 13:18:02,412 - Trainer - SESSION_5928a37b - INFO: Start training...
+2023-12-12 13:18:41,381 - Trainer - SESSION_5928a37b - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 13:18:41,382 - Trainer - SESSION_5928a37b - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 13:18:41,553 - Trainer - SESSION_5928a37b - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 13:29:07,168 - Trainer - SESSION_52a494af - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:29:07,665 - Trainer - SESSION_52a494af - INFO: Train data length: 100 (sessions), statistics: {'min': 100, 'max': 100, 'mean': 100.0} total_train_logs 10000
+2023-12-12 13:29:07,666 - Trainer - SESSION_52a494af - INFO: Size of train data: 90. Size of valid data: 10
+2023-12-12 13:29:07,693 - Trainer - SESSION_52a494af - INFO: Number of sequences: 7200
+2023-12-12 13:29:07,697 - Trainer - SESSION_52a494af - INFO: Number of sequences: 800
+2023-12-12 13:29:07,698 - Trainer - SESSION_52a494af - INFO: Start training...
+2023-12-12 13:29:40,107 - Trainer - SESSION_52a494af - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 13:29:40,107 - Trainer - SESSION_52a494af - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 13:29:40,193 - Trainer - SESSION_52a494af - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 13:53:09,616 - Trainer - SESSION_61cba5a2 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:53:34,534 - Trainer - SESSION_3959c71c - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:11:09,695 - Trainer - SESSION_ef7b3173 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:11:21,287 - Trainer - SESSION_d63df065 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:11:22,004 - Trainer - SESSION_d63df065 - INFO: Start training...
+2023-12-12 14:12:02,084 - Trainer - SESSION_d63df065 - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 14:12:02,084 - Trainer - SESSION_d63df065 - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 14:12:02,210 - Trainer - SESSION_d63df065 - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 14:12:39,242 - Trainer - SESSION_f48b505e - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:12:51,148 - Trainer - SESSION_92b3b84b - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 14:12:52,002 - Trainer - SESSION_92b3b84b - INFO: Start training...
+2023-12-12 14:13:31,061 - Trainer - SESSION_92b3b84b - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 14:13:31,061 - Trainer - SESSION_92b3b84b - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 14:13:31,250 - Trainer - SESSION_92b3b84b - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 15:28:10,738 - Trainer - SESSION_8a4f6270 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:28:11,674 - Trainer - SESSION_8a4f6270 - INFO: Start training...
+2023-12-12 15:28:52,761 - Trainer - SESSION_8a4f6270 - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 15:28:52,761 - Trainer - SESSION_8a4f6270 - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 15:28:52,887 - Trainer - SESSION_8a4f6270 - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 15:28:52,887 - Trainer - SESSION_8a4f6270 - INFO: ---Finish training---
+2023-12-12 15:43:03,288 - Trainer - SESSION_a1129818 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:45:26,193 - Trainer - SESSION_a0b98ce5 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:45:26,906 - Trainer - SESSION_a0b98ce5 - INFO: Start training...
+2023-12-12 15:45:59,577 - Trainer - SESSION_a0b98ce5 - INFO: Train top-9: 10, Valid top-9: 16
+2023-12-12 15:45:59,577 - Trainer - SESSION_a0b98ce5 - INFO: Train Loss: 1.8102 - Val Loss: 1.1990 - Val Acc: 0.9975
+2023-12-12 15:45:59,650 - Trainer - SESSION_a0b98ce5 - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 15:45:59,650 - Trainer - SESSION_a0b98ce5 - INFO: Finish training
+2023-12-12 15:46:45,681 - Trainer - SESSION_9a12595b - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:47:18,095 - Trainer - SESSION_2f5c52cf - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:47:38,966 - Trainer - SESSION_5a4ece02 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:48:00,456 - Trainer - SESSION_a0abd57d - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:49:07,579 - Trainer - SESSION_06bc5475 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:49:39,713 - Trainer - SESSION_2054f841 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:50:06,656 - Trainer - SESSION_be3728b8 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:50:24,871 - Trainer - SESSION_f847a176 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:52:34,646 - Trainer - SESSION_09ce003f - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:53:03,789 - Trainer - SESSION_670586c1 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:54:01,149 - Trainer - SESSION_2510811a - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:54:01,834 - Trainer - SESSION_2510811a - INFO: Start training...
+2023-12-12 15:54:24,609 - Trainer - SESSION_7a6b32e1 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:54:25,304 - Trainer - SESSION_7a6b32e1 - INFO: Start training...
+2023-12-12 15:56:09,411 - Trainer - SESSION_01e54329 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:56:10,039 - Trainer - SESSION_01e54329 - INFO: Start training...
+2023-12-12 15:57:36,679 - Trainer - SESSION_ec101b8c - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:57:37,355 - Trainer - SESSION_ec101b8c - INFO: Start training...
+2023-12-12 15:58:02,686 - Trainer - SESSION_18d091ce - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:58:03,339 - Trainer - SESSION_18d091ce - INFO: Start training...
+2023-12-12 15:58:39,418 - Trainer - SESSION_b42017d5 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:58:40,118 - Trainer - SESSION_b42017d5 - INFO: Start training...
+2023-12-12 15:59:22,226 - Trainer - SESSION_be4ac986 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 15:59:22,932 - Trainer - SESSION_be4ac986 - INFO: Start training...
+2023-12-12 15:59:54,209 - Trainer - SESSION_be4ac986 - INFO: Train top-9: 11, Valid top-9: 16
+2023-12-12 15:59:54,209 - Trainer - SESSION_be4ac986 - INFO: Train Loss: 1.8264 - Val Loss: 1.1964 - Val Acc: 0.9975
+2023-12-12 15:59:54,280 - Trainer - SESSION_be4ac986 - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 15:59:54,280 - Trainer - SESSION_be4ac986 - INFO: Finish training
+2023-12-12 16:03:43,054 - Trainer - SESSION_b57bc4d1 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 16:03:43,740 - Trainer - SESSION_b57bc4d1 - INFO: Start training...
+2023-12-12 16:04:23,881 - Trainer - SESSION_b57bc4d1 - INFO: Train top-9: 11, Valid top-9: 16
+2023-12-12 16:04:23,881 - Trainer - SESSION_b57bc4d1 - INFO: Train Loss: 1.8264 - Val Loss: 1.1964 - Val Acc: 0.9975
+2023-12-12 16:04:24,026 - Trainer - SESSION_b57bc4d1 - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-12 16:04:24,026 - Trainer - SESSION_b57bc4d1 - INFO: Finish training
+2023-12-13 12:36:16,368 - Trainer - SESSION_c6614388 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 12:36:18,793 - Trainer - SESSION_c6614388 - INFO: Start training...
+2023-12-13 12:37:39,929 - Trainer - SESSION_c6614388 - INFO: Train top-9: 11, Valid top-9: 16
+2023-12-13 12:37:39,929 - Trainer - SESSION_c6614388 - INFO: Train Loss: 1.8264 - Val Loss: 1.1964 - Val Acc: 0.9975
+2023-12-13 12:37:40,289 - Trainer - SESSION_c6614388 - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-13 12:37:40,289 - Trainer - SESSION_c6614388 - INFO: Finish training
+2023-12-13 14:01:57,749 - Trainer - SESSION_4408727d - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 14:02:06,294 - Trainer - SESSION_4408727d - INFO: Start training...
+2023-12-13 14:02:21,135 - Trainer - SESSION_ff73b39f - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 14:03:15,144 - Trainer - SESSION_ff73b39f - INFO: Start training...
+2023-12-13 15:12:13,678 - Trainer - SESSION_ff73b39f - INFO: Train top-9: 9, Valid top-9: 13
+2023-12-13 15:12:13,685 - Trainer - SESSION_ff73b39f - INFO: Train Loss: 1.2320 - Val Loss: 1.2146 - Val Acc: 0.9972
+2023-12-13 15:12:21,892 - Trainer - SESSION_ff73b39f - INFO: Current top-k: 9 , min recommendation: 1
+
+2023-12-13 15:12:21,893 - Trainer - SESSION_ff73b39f - INFO: Finish training
+2023-12-13 15:16:36,907 - Trainer - SESSION_f19e9b06 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:20:55,430 - Trainer - SESSION_06c3899f - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:21:35,746 - Trainer - SESSION_7ab3e392 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:21:57,295 - Trainer - SESSION_ee262169 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-13 15:30:06,057 - Trainer - SESSION_a734f4b8 - INFO: Construct Trainer logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs

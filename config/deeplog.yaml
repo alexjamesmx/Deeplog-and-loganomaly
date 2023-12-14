@@ -17,8 +17,8 @@ embedding_dim: 300 # default: 300, can range: from 32 to 1024
 dropout: 0.1 # dropout rate: from 0.0 to 0.5
 hidden_size: 128 # hidden size: from 32 to 1024 default: same as h
 num_layers: 2 # nucd ..mber of layers: from 1 to 8
-topk: 9 # default
-history_size: 20
+topk: 2 # default
+history_size: 3
 
 # optimizer configuration
 scheduler: linear
@@ -36,12 +36,12 @@ batch_size: 2050 # range: from 32 to 4096
 max_epoch: 15 # range: from 1 to 100
 
 # common configuration
-step_size: 100
+step_size: 1
 window_size: 100
-train_size: 0.1
+train_size: 0.4
 valid_ratio: 0.1
 
 #run code
-is_train: true
-is_predict: false
+is_train: false
+is_predict: true
 parameter_model: true

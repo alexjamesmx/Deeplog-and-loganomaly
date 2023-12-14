@@ -1,0 +1,23 @@
+2023-12-12 13:15:48,779 - main - SESSION_ccfdc59b - INFO: Construct main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:15:48,791 - main - SESSION_ccfdc59b - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 13:15:48,792 - main - SESSION_ccfdc59b - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 13:16:08,537 - main - SESSION_ba37c4cf - INFO: Construct main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-12 13:16:08,547 - main - SESSION_ba37c4cf - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-12 13:16:08,547 - main - SESSION_ba37c4cf - INFO: Output directory: ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/
+2023-12-12 13:16:08,547 - main - SESSION_ba37c4cf - INFO: Loading vocab from ./output//oct2-3//DeepLog/train0.1/h_size100_s_size20/vocabs/DeepLog.pkl
+2023-12-12 13:16:08,547 - main - SESSION_ba37c4cf - INFO: Vocab size: 30
+
