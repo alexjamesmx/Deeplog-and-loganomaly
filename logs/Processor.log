@@ -51,3 +51,7 @@
 2023-12-13 15:21:58,769 - Processor - SESSION_ee262169 - INFO: Test sessions size: 60000. statistics: {'min': 1, 'max': 100, 'mean': 99.9175}
 2023-12-13 15:30:06,057 - Processor - SESSION_a734f4b8 - INFO: Construct Preprocessor logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
 2023-12-13 15:30:07,600 - Processor - SESSION_a734f4b8 - INFO: Test sessions size: 60000. statistics: {'min': 1, 'max': 100, 'mean': 99.9175}
+2023-12-26 12:06:55,763 - Processor - SESSION_420657d2 - INFO: Construct Preprocessor logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-26 12:07:02,872 - Processor - SESSION_420657d2 - INFO: Test sessions size: 60000. statistics: {'min': 1, 'max': 100, 'mean': 99.9175}
+2023-12-29 12:54:57,150 - Processor - SESSION_a0af8a87 - INFO: Construct Preprocessor logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-29 12:55:01,154 - Processor - SESSION_a0af8a87 - INFO: Test sessions size: 60000. statistics: {'min': 1, 'max': 100, 'mean': 99.9175}

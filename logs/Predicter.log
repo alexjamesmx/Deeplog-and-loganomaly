@@ -44,3 +44,7 @@
 2023-12-13 15:30:06,061 - Predicter - SESSION_a734f4b8 - INFO: Construct Predicter logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
 2023-12-13 15:30:17,030 - Predicter - SESSION_a734f4b8 - INFO: Start predicting DeepLog model on cpu device with top-2 recommendation
 2023-12-13 17:10:01,655 - Predicter - SESSION_a734f4b8 - INFO: Computing metrics...
+2023-12-26 12:06:55,774 - Predicter - SESSION_420657d2 - INFO: Construct Predicter logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-26 12:07:25,406 - Predicter - SESSION_420657d2 - INFO: Start predicting DeepLog model on cpu device with top-2 recommendation
+2023-12-29 12:54:57,161 - Predicter - SESSION_a0af8a87 - INFO: Construct Predicter logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-29 12:55:12,427 - Predicter - SESSION_a0af8a87 - INFO: Start predicting DeepLog model on cpu device with top-2 recommendation

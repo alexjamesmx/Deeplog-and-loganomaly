@@ -88,3 +88,7 @@
 2023-12-13 15:21:57,562 - Preprocessor - SESSION_ee262169 - INFO: Loading train.pkl and test.pkl from ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
 2023-12-13 15:30:06,343 - Preprocessor - SESSION_a734f4b8 - INFO: Construct Preprocessor logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
 2023-12-13 15:30:06,347 - Preprocessor - SESSION_a734f4b8 - INFO: Loading train.pkl and test.pkl from ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-26 12:06:59,646 - Preprocessor - SESSION_420657d2 - INFO: Construct Preprocessor logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-26 12:06:59,666 - Preprocessor - SESSION_420657d2 - INFO: Loading train.pkl and test.pkl from ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-29 12:54:59,570 - Preprocessor - SESSION_a0af8a87 - INFO: Construct Preprocessor logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-29 12:54:59,580 - Preprocessor - SESSION_a0af8a87 - INFO: Loading train.pkl and test.pkl from ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/

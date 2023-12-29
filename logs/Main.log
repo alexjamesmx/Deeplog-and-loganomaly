@@ -393,3 +393,25 @@ Mixed precision type: no
 
 2023-12-13 15:30:06,347 - Main - SESSION_a734f4b8 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
 2023-12-13 15:30:06,531 - Main - SESSION_a734f4b8 - INFO: length of vocabs: 59
+2023-12-26 12:06:59,647 - Main - SESSION_420657d2 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-26 12:06:59,665 - Main - SESSION_420657d2 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-26 12:06:59,665 - Main - SESSION_420657d2 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-26 12:07:00,092 - Main - SESSION_420657d2 - INFO: length of vocabs: 59
+2023-12-29 12:54:59,570 - Main - SESSION_a0af8a87 - INFO: Construct Main logger success, current working directory: /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog, logs will be written in /home/abelsantiago/Documents/log anomaly sistem detection/z_deeplog/logs
+2023-12-29 12:54:59,579 - Main - SESSION_a0af8a87 - INFO: Distributed environment: DistributedType.NO
+Num processes: 1
+Process index: 0
+Local process index: 0
+Device: cpu
+
+Mixed precision type: no
+
+2023-12-29 12:54:59,580 - Main - SESSION_a0af8a87 - INFO: Output directory: ./output//oct2-3//DeepLog/train0.4/h_size100_s_size3/
+2023-12-29 12:54:59,848 - Main - SESSION_a0af8a87 - INFO: length of vocabs: 59
