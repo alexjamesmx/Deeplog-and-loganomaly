@@ -82,10 +82,12 @@ In our case, the data do not contain eventTemplates as parsing was done in a dif
  ``` 
 By analyzing the whole datasets, we have discovered that some keys might be null in log messages, making the use of most fields in the model challenging (very low number logs contain some fields). **After counting the keys from different files, we concluded that using EVENTID as the eventTemplate is a suitable approach**. EVENTID field is among the most common keys, and logs with the same EVENTID contain the same message.
 
-## Model Details
+# Deeplog
 Deeplog predicts the subsequent log by utilizing sequential vectors, employing LSTM models. During the training phase, Deeplog rely solely on the index of log events and disregard the semantic information embedded in log messages.
 
 Deeplog is trained on a small percentage of the data, specifically less than 1% of the Hadoop Distributed File System (HDFS) dataset. This involves sessions parsed from the initial 100,000 log entries out of a total of 11,197,954. The limited training data makes Deeplog prone to predicting unseen events as anomalies, resulting in numerous false positives when dealing with extensive, unstructured log datasets.
+
+# LogAnomaly
 
 To address this limitation, **LogAnomaly** extends Deeplog's model by incorporating semantic information for incoming unseen events. LogAnomaly tackles this issue by leveraging embeddings derived from the dataset assuming that the developer does not know the overall information, a log (template) may have new types of logs (similar templates) at runtime that are very similar and normal.
 
@@ -101,5 +103,14 @@ In the occurrence of an unseen event, the associated message is compared to the 
 The generation of embeddings involves training using either *average* or *TF-IDF* methods, both of which yield satisfactory results. Each EVENTID is mapped to a Word2Vec vector, ultimately leading to the creation of an embeddings file.
 
 
-## Deeplog
+# Models Details 
 The input of the model consists of ``
+
+
+# Todo
+[ ] Deeplog's parameter model
+
+[x] LogAnomaly map unseen events to known events applying similarity.
+
+
+[] Test with GPUs with more than 100k logs
