@@ -1,34 +1,105 @@
-Steps to run:
+This code is finished, readme is still not. have in mind that parsing is not part of the code. eventId in my case is used same as eventTemplates or parsed log messages from papers. 
 
-1. Add dataset at ./dataset/{folder_name}/{file_name} with any name. (camel case recommended) ("data" is the name I give to txt files).
-2. Set train or predict params in ./config/{model_name} as following:
-   is_train: false
-   is_predict: true
-   You can play around with the other parameters for fine tuning
+# Log Anomaly Detection: Deeplog/LogAnomaly  
+Software-intensive systems produce lots of logs for troubleshooting purposes,  which can help engineers understand the system’s internal status and facilitate monitoring, administering, and troubleshooting of any system. 
 
-To consider:
+Usually a developer/operator has incomplete
+information of the overall system, and tend to determine
+anomalous logs from a local perspective and thus is error prone. In addition, manual detection of anomalous logs is
+becoming infeasible due to the explosion of logs. Keywords (e.g., “fail”) matching and regular expressions, detecting single anomalous logs based on explicit keywords or structural
+features, prevent a large portion of log anomalies from being detected. These anomalies can only be inferred based
+on their log sequences which contains multiple logs violating regular rules.
 
-1. Set w, h, and step carefully. If a session doesn't fill up the w, padding token from vocab will take the place, this will avoid errors, but definetily won't as efficient as filling sliding windows with real events, so if w=100, use h=5,10,20,50 or divisible that leaves no residue. if w=30 then h my be 3,5,10,etc.
-2. The more layers, hidden units, no_epochs, the more time it takes. Consider first testing with default values.
-3. Top k is the number of candidates the model will choose from certain num_classes learnt in vocab. if num_clases=30, choose a topk less than num_classes.
-   The greater top-k is, the less anomalies it will label. The lower top-k is, more anomalies it will predict. (this may lead to false positives. Try changning values).
-4. The code is meant to run also LogAnomaly model, however, this is not complete yet, so forget bout embeddings for now.
-5. Deeplog is composed of 2 phases, log key anomaly detection and parameter anomaly detection. This repository uses log key. meaning detecting abnormal sequences where Eventids or eventTemplates from messages are used. Parameter model detection according to some developers doen't improve that much and is more computationally expensive, however. it is being implemented for testing, not finished yet.
-6. You can use any dataset just follow the common columns.
-7. in "./testing/\*\*" abnormal predictions will be written.
-8. First train a model and then predict it, when predicting, change topk values and see what value works better.
-9. If an error occurs, it is possible to be from vocab and input sizes. Delete output folder from that dataset and try training again.
-10. output folder will be created automallically.
-11. Parameters can be declare from command-line. However I'd recommend using config file.
-12. Store log class is only for debugging, see file.
+Numerous deep learning models have been proposed for the automated detection of system anomalies using log data. However, the impracticality of collecting and labeling logs in real-world environments has prompted the exploration of unsupervised models.
 
-How it works:
+This code comprises two log-based anomaly detection models adjusted to our own needs,  [Deeplog][1] and [LogAnomaly][2] (a deeplog's extended version that uses semantic information to lower false positives on unseen data ).
 
-1. First, parses text files to json file with n number of logs (for testing)
-2. Creates sessions of w (window session simulating lapses of time) logs with specific columns. (make sure eventId is in most data, other fields may be discarded)
-3. Creates vocab where eventIds are pointed to random indices so when training, try to use normal system execution files. Most known indices created in vocab will be labeled as normal.
-4. Create sliding windows with default step 1, where history size is the sub-window of w. E.g w=50, h=10 -> 5 sequences. [[...],[10,20,30,40,50,60,70,80,90,100],[...]]
-   labels means the next eventid. if w=10, h=3, s=1 then [10,20,30,40,50,60,70,80,90,100] = [10,20,30] -> 40, [20,30,40] -> 50, [30.40.50] -> 60,[40,50,60] -> 70, [50.60.70] ->80, [60,70,80] ->90, [70,80,90] -> 100
+It's important to note that many log-based models are often evaluated on labeled datasets such as HDFS, BGL, Thunderbird, and Spirit. However, these models frequently lack open-source toolkits or code, making reproducibility challenging for developers. This project does not aim to replicate results from these papers, and consequently, the models employed on this project may differ from the original papers.
 
-python main.py --config_file config/loganomaly.yaml
-python main.py --config_file config/deeplog.yaml
+
+## Table of contents 
+  1. [Dataset](#dataset)
+  2. [Model details](#model-details)
+  3. [Usage](#usage)
+  4. [Development setup](#development-setup)
+  5. [Task list](#task-list)
+  6. [References](#references)
+
+## Project Structure 
+```
+├─config            #configurations for each model
+├─data              #instances for log data and vocab
+├─dataset           #data source
+├─logs              #runtime logs
+├─models            #instances for DL models
+├─output            #saved DL models, vocabs and preprocessed data
+├─preprocessing     #preprocessing code, data loaders, generating sessions
+├─scripts           #running scripts for execution
+├─testing           #predicted results
+├─utils     
+constants.py
+main.py             #root execution.py
+predict.py            
+train.py
+
+
+```
+
+
+
+
+
+## Dataset
+
+Log data is usually unstructured text messages where anomaly detection models comprend parsing as a step within their framework, there are several parsing techniques, however, here we do not deal with that. The data must be already parsed and formated as JSON objects. 
+
+Deeplog uses **EventTemplates** to map indices within sequences, an eventTemplate is the result of **parsing** a log message. 
+
+log message |eventTemplate| variable | 
+--- | --- | ---
+*Deletion of **file1** complete* | *Deletion of * complete*|file1 
+
+In our case, the data do not contain eventTemplates as parsing was done in a different way. You can find a sample of a log from our data below.
+
+ ``` 
+{
+    "_zl_timestamp": "1696149046000", 
+    "log_uuid":"80ad959d-5815-11ee-988e-cc483a4638dd_elacollector8da9fe5e9b2c42c7843bcdff5175e0435257320593532651", 
+    "SEVERITY": "success", 
+    "HOSTNAME": "gokul-l3c", 
+    "HOSTID": "27000000269125", 
+    "HOSTTYPE": "windows", 
+    "MESSAGE": "An attempt was made to duplicate a handle to an object.\r\n\r\nSubject:\r\n\t
+    Security ID:\t\tS-1-5-18\r\n\tAccount Name:\t\tGOKUL-L3C$\r\n\tAccount Domain:\t\t
+    WORKGROUP\r\n\tLogon ID:\t\t0x3E7\r\n\r\nSource Handle Information:\r\n\tSource Handle ID:\t0x12a8\r\n\tSource Process ID:\t0x160\r\n\r\n
+    New Handle Information:\r\n\tTarget Handle ID:\t0x5b1c\r\n\tTarget Process ID:\t0x4", 
+    "TYPE": "security", 
+    "SOURCE": "microsoft-windows-security-auditing", 
+    "TASKCATEGORY": "handle manipulation", 
+    "EVENTID": "4690", 
+    "TIME": "1696149046061"
+}
+ ``` 
+By analyzing the whole datasets, we have discovered that some keys might be null in log messages, making the use of most fields in the model challenging (very low number logs contain some fields). **After counting the keys from different files, we concluded that using EVENTID as the eventTemplate is a suitable approach**. EVENTID field is among the most common keys, and logs with the same EVENTID contain the same message.
+
+## Model Details
+Deeplog predicts the subsequent log by utilizing sequential vectors, employing LSTM models. During the training phase, Deeplog rely solely on the index of log events and disregard the semantic information embedded in log messages.
+
+Deeplog is trained on a small percentage of the data, specifically less than 1% of the Hadoop Distributed File System (HDFS) dataset. This involves sessions parsed from the initial 100,000 log entries out of a total of 11,197,954. The limited training data makes Deeplog prone to predicting unseen events as anomalies, resulting in numerous false positives when dealing with extensive, unstructured log datasets.
+
+To address this limitation, **LogAnomaly** extends Deeplog's model by incorporating semantic information for incoming unseen events. LogAnomaly tackles this issue by leveraging embeddings derived from the dataset assuming that the developer does not know the overall information, a log (template) may have new types of logs (similar templates) at runtime that are very similar and normal.
+
+known template | unseen template
+--- | --- 
+Interface * changed state to **down** | Interface * changed state to **up** 
+file * **opened** | file * **closed** 
+
+A illustrative scenario arises when a file is opened (resulting in a generated log), providing only the knowledge of the file being open at that moment. However, over time, it is imperative that the file is closed (another log is generated). In such cases, Deeplog might erroneously label the sequence as an anomaly. The act of closing a file is an essential follow-up to opening it. LogAnomaly approach excels by accurately mapping the unseen event to the known event, rectifying this potential misclassification.
+
+In the occurrence of an unseen event, the associated message is compared to the embeddings of known events' messages. If the similarity between the message of the unseen event and any known message is sufficiently higher to a certain threshold, LogAnomaly maps the unseen event to that specific known event, thereby reducing the number of false positives.
+
+The generation of embeddings involves training using either *average* or *TF-IDF* methods, both of which yield satisfactory results. Each EVENTID is mapped to a Word2Vec vector, ultimately leading to the creation of an embeddings file.
+
+
+## Deeplog
+The input of the model consists of ``
