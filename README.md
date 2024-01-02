@@ -1,5 +1,4 @@
-This code is finished, readme is still not. have in mind that parsing is not part of the code. eventId in my case is used same as eventTemplates or parsed log messages from papers. 
-
+This code is not finished yet. I will implement HDFS and BGL datasets to it, so you can run the code easier
 # Log Anomaly Detection: Deeplog/LogAnomaly  
 Software-intensive systems produce lots of logs for troubleshooting purposes,  which can help engineers understand the system’s internal status and facilitate monitoring, administering, and troubleshooting of any system. 
 
